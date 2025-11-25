@@ -30,17 +30,20 @@ public class RentalAppGui extends JFrame {
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // Buttons
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 3, 10, 0));
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 4, 10, 0));
         JButton viewButton = new JButton("Lihat Kendaraan");
         JButton rentButton = new JButton("Tambah Kendaraan");
+        JButton updateButton = new JButton("Update Kendaraan");
         JButton returnButton = new JButton("Hapus Kendaraan");
 
         buttonPanel.add(viewButton);
         buttonPanel.add(rentButton);
+        buttonPanel.add(updateButton);
         buttonPanel.add(returnButton);
 
         // Display area
         displayArea = new JTextArea("Selamat datang di Sistem Rental Kendaraan!\n");
+        displayArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
         displayArea.setEditable(false);
         JScrollPane scrollPane = new JScrollPane(displayArea);
 
@@ -59,18 +62,34 @@ public class RentalAppGui extends JFrame {
 
         // 3) HAPUS KENDARAAN
         returnButton.addActionListener(e -> deleteVehicleDialog());
+        
+        // 4) UPDATE KENDARAAN
+        updateButton.addActionListener(e -> updateVehicleDialog());
     }
 
     // LIST VEHICLES FROM DB
     private void viewVehicles() {
         try {
             List<Vehicle> list = adminService.listVehicles();
-            displayArea.setText("--- Daftar Kendaraan ---\n");
+            StringBuilder sb = new StringBuilder();
+            sb.append(String.format("%-5s | %-15s | %-12s | %-20s | %-10s | %s\n", "ID", "PLAT NOMOR", "TIPE", "MERK & MODEL", "HARGA", "TERSEDIA"));
+            sb.append("----------------------------------------------------------------------------------------------------\n");
+
             if (list.isEmpty()) {
-                displayArea.append("Belum ada kendaraan.\n");
+                sb.append("Belum ada kendaraan.\n");
             } else {
-                list.forEach(v -> displayArea.append(v.toString() + "\n"));
+                for (Vehicle v : list) {
+                    String brandModel = v.getBrand() + " " + v.getModel();
+                    sb.append(String.format("%-5d | %-15s | %-12s | %-20s | Rp %-7.0f | %s\n",
+                            v.getId(),
+                            v.getPlateNumber(),
+                            v.getType(),
+                            brandModel,
+                            v.getBasePrice(),
+                            v.isAvailable() ? "Ya" : "Tidak"));
+                }
             }
+            displayArea.setText(sb.toString());
         } catch (Exception ex) {
             displayArea.setText("Error: " + ex.getMessage());
         }
@@ -109,6 +128,9 @@ public class RentalAppGui extends JFrame {
                 case "Motorcycle":
                     adminService.addVehicle(new MotorcycleFactory(), plate, brand, model, basePrice);
                     break;
+                case "Truck":
+                    adminService.addVehicle(new TruckFactory(), plate, brand, model, basePrice);
+                    break;
             }
 
             displayArea.append("Kendaraan berhasil ditambahkan!\n");
@@ -129,6 +151,46 @@ public class RentalAppGui extends JFrame {
             adminService.deleteVehicle(id);
             displayArea.append("Kendaraan ID " + id + " berhasil dihapus!\n");
             viewVehicles();
+        } catch (Exception ex) {
+            displayArea.setText("Error: " + ex.getMessage());
+        }
+    }
+
+    private void updateVehicleDialog() {
+        String idStr = JOptionPane.showInputDialog(this, "Masukkan ID kendaraan yang akan diupdate:");
+
+        if (idStr == null) return;
+
+        try {
+            int id = Integer.parseInt(idStr);
+            Vehicle vehicle = adminService.findById(id);
+
+            if (vehicle == null) {
+                JOptionPane.showMessageDialog(this, "Kendaraan dengan ID " + id + " tidak ditemukan.", "Error", JOptionPane.ERROR_MESSAGE);
+                return;
+            }
+
+            String plate = (String) JOptionPane.showInputDialog(this, "Nomor Plat:", "Update Kendaraan", JOptionPane.PLAIN_MESSAGE, null, null, vehicle.getPlateNumber());
+            String brand = (String) JOptionPane.showInputDialog(this, "Merk:", "Update Kendaraan", JOptionPane.PLAIN_MESSAGE, null, null, vehicle.getBrand());
+            String model = (String) JOptionPane.showInputDialog(this, "Model:", "Update Kendaraan", JOptionPane.PLAIN_MESSAGE, null, null, vehicle.getModel());
+            String priceStr = (String) JOptionPane.showInputDialog(this, "Harga dasar per hari:", "Update Kendaraan", JOptionPane.PLAIN_MESSAGE, null, null, vehicle.getBasePrice());
+
+            if (plate == null || brand == null || model == null || priceStr == null) return;
+
+            double basePrice = Double.parseDouble(priceStr);
+
+            vehicle.setPlateNumber(plate);
+            vehicle.setBrand(brand);
+            vehicle.setModel(model);
+            vehicle.setBasePrice(basePrice);
+
+            adminService.updateVehicle(vehicle);
+
+            displayArea.append("Kendaraan ID " + id + " berhasil diupdate!\n");
+            viewVehicles();
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(this, "ID harus berupa angka.", "Error", JOptionPane.ERROR_MESSAGE);
         } catch (Exception ex) {
             displayArea.setText("Error: " + ex.getMessage());
         }

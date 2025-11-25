@@ -37,4 +37,12 @@ public class AdminService {
     public void setAvailability(int id, boolean available) throws SQLException {
         vehicleDAO.updateAvailability(id, available);
     }
+
+    public Vehicle findById(int id) throws SQLException {
+        return vehicleDAO.findById(id);
+    }
+
+    public void updateVehicle(Vehicle vehicle) throws SQLException {
+        vehicleDAO.updateVehicle(vehicle);
+    }
 }

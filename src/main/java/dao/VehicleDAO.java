@@ -1,6 +1,9 @@
 package main.java.dao;
 
 import main.java.db.ConnectionManager;
+import main.java.vehicle.Car;
+import main.java.vehicle.Motorcycle;
+import main.java.vehicle.Truck;
 import main.java.vehicle.Vehicle;
 
 import java.sql.*;
@@ -43,6 +46,20 @@ public class VehicleDAO {
         return null;
     }
 
+    public Vehicle findById(int id) throws SQLException {
+        String sql = "SELECT id, plate, type, brand, model, base_price, available FROM vehicles WHERE id = ?";
+        try (Connection conn = ConnectionManager.getDataSource().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, id);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return mapRow(rs);
+                }
+            }
+        }
+        return null;
+    }
+
     public List<Vehicle> getAll() throws SQLException {
         String sql = "SELECT id, plate, type, brand, model, base_price, available FROM vehicles ORDER BY id";
         List<Vehicle> list = new ArrayList<>();
@@ -75,15 +92,38 @@ public class VehicleDAO {
         }
     }
 
+    public void updateVehicle(Vehicle vehicle) throws SQLException {
+        String sql = "UPDATE vehicles SET plate = ?, brand = ?, model = ?, base_price = ? WHERE id = ?";
+        try (Connection conn = ConnectionManager.getDataSource().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, vehicle.getPlateNumber());
+            ps.setString(2, vehicle.getBrand());
+            ps.setString(3, vehicle.getModel());
+            ps.setDouble(4, vehicle.getBasePrice());
+            ps.setInt(5, vehicle.getId());
+            ps.executeUpdate();
+        }
+    }
+
     private Vehicle mapRow(ResultSet rs) throws SQLException {
-        return new Vehicle(
-                rs.getInt("id"),
-                rs.getString("plate"),
-                rs.getString("type"),
-                rs.getString("brand"),
-                rs.getString("model"),
-                rs.getDouble("base_price"),
-                rs.getBoolean("available")
-        );
+        int id = rs.getInt("id");
+        String plate = rs.getString("plate");
+        String type = rs.getString("type");
+        String brand = rs.getString("brand");
+        String model = rs.getString("model");
+        double basePrice = rs.getDouble("base_price");
+        boolean available = rs.getBoolean("available");
+
+        switch (type) {
+            case "Car":
+                return new Car(id, plate, brand, model, basePrice, available);
+            case "Motorcycle":
+                return new Motorcycle(id, plate, brand, model, basePrice, available);
+            case "Truck":
+                return new Truck(id, plate, brand, model, basePrice, available);
+            default:
+                // Fallback or throw an exception if type is unknown
+                throw new SQLException("Unknown vehicle type: " + type);
+        }
     }
 }

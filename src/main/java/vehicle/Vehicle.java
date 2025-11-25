@@ -1,6 +1,6 @@
 package main.java.vehicle;
 
-public class Vehicle {
+public abstract class Vehicle {
     private int id; // id dari DB
     private String plateNumber;
     private String type;
@@ -10,12 +10,12 @@ public class Vehicle {
     private boolean available;
 
     // Constructor untuk object baru (belum ada id)
-    public Vehicle(String plateNumber, String type, String brand, String model, double basePrice) {
+    protected Vehicle(String plateNumber, String type, String brand, String model, double basePrice) {
         this(0, plateNumber, type, brand, model, basePrice, true);
     }
 
     // Full constructor (untuk mapping dari DB)
-    public Vehicle(int id, String plateNumber, String type, String brand, String model, double basePrice, boolean available) {
+    protected Vehicle(int id, String plateNumber, String type, String brand, String model, double basePrice, boolean available) {
         this.id = id;
         this.plateNumber = plateNumber;
         this.type = type;
@@ -36,6 +36,10 @@ public class Vehicle {
 
     public void setId(int id) { this.id = id; }
     public void setAvailable(boolean available) { this.available = available; }
+    public void setPlateNumber(String plateNumber) { this.plateNumber = plateNumber; }
+    public void setBrand(String brand) { this.brand = brand; }
+    public void setModel(String model) { this.model = model; }
+    public void setBasePrice(double basePrice) { this.basePrice = basePrice; }
 
     @Override
     public String toString() {
