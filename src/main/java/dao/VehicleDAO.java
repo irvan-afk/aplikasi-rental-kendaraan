@@ -1,14 +1,18 @@
-package main.java.dao;
+package dao;
 
-import main.java.db.ConnectionManager;
-import main.java.vehicle.Car;
-import main.java.vehicle.Motorcycle;
-import main.java.vehicle.Truck;
-import main.java.vehicle.Vehicle;
-
-import java.sql.*;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
+
+import db.ConnectionManager;
+import vehicle.Car;
+import vehicle.Motorcycle;
+import vehicle.Truck;
+import vehicle.Vehicle;
 
 public class VehicleDAO {
 

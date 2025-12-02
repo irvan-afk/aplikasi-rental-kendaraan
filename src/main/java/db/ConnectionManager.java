@@ -1,11 +1,12 @@
-package main.java.db;
+package db;
+
+import java.io.InputStream;
+import java.util.Properties;
+
+import javax.sql.DataSource;
 
 import com.zaxxer.hikari.HikariConfig;
 import com.zaxxer.hikari.HikariDataSource;
-
-import javax.sql.DataSource;
-import java.util.Properties;
-import java.io.InputStream;
 
 public class ConnectionManager {
 

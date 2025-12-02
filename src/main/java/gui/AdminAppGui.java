@@ -1,22 +1,32 @@
-package main.java.gui;
+package gui;
 
-import main.java.dao.VehicleDAO;
-import main.java.service.AdminService;
-import main.java.vehicle.Vehicle;
-import main.java.vehicle.factory.CarFactory;
-import main.java.vehicle.factory.MotorcycleFactory;
-import main.java.vehicle.factory.TruckFactory;
-
-import javax.swing.*;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
 import java.util.List;
 
-public class RentalAppGui extends JFrame {
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+import javax.swing.SwingUtilities;
+
+import dao.VehicleDAO;
+import service.AdminService;
+import vehicle.Vehicle;
+import vehicle.factory.CarFactory;
+import vehicle.factory.MotorcycleFactory;
+import vehicle.factory.TruckFactory;
+
+public class AdminAppGui extends JFrame {
 
     private AdminService adminService;
     private JTextArea displayArea;
 
-    public RentalAppGui() {
+    public AdminAppGui() {
         // Init service & DAO
         VehicleDAO dao = new VehicleDAO();
         adminService = new AdminService(dao);
@@ -197,6 +207,6 @@ public class RentalAppGui extends JFrame {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new RentalAppGui().setVisible(true));
+        SwingUtilities.invokeLater(() -> new AdminAppGui().setVisible(true));
     }
 }

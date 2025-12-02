@@ -1,4 +1,4 @@
-package main.java.pricing;
+package pricing;
 
 public class MemberDiscountPricing {
     
