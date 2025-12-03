@@ -28,3 +28,13 @@ CREATE TABLE rentals (
     total_cost NUMERIC(12,2) NOT NULL,
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
+
+-- admins
+CREATE TABLE admins (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(255) NOT NULL
+);
+
+-- default admin
+INSERT INTO admins (username, password) VALUES ('admin', 'admin');

@@ -29,4 +29,3 @@ Thumbs.db
 
 # Configuration files (containing sensitive or local data)
 src/main/resources/config.properties
-GEMINI.md

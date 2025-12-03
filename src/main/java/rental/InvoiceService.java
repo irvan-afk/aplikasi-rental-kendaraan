@@ -1,4 +1,4 @@
-package main.java.rental;
+package rental;
 
 public class InvoiceService {
     

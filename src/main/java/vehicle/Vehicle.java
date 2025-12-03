@@ -1,4 +1,4 @@
-package main.java.vehicle;
+package vehicle;
 
 public abstract class Vehicle {
     private int id; // id dari DB

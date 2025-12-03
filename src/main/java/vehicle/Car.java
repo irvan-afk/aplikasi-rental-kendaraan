@@ -1,4 +1,4 @@
-package main.java.vehicle;
+package vehicle;
 
 public class Car extends Vehicle {
 

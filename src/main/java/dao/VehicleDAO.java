@@ -1,10 +1,10 @@
-package main.java.dao;
+package dao;
 
-import main.java.db.ConnectionManager;
-import main.java.vehicle.Car;
-import main.java.vehicle.Motorcycle;
-import main.java.vehicle.Truck;
-import main.java.vehicle.Vehicle;
+import db.ConnectionManager;
+import vehicle.Car;
+import vehicle.Motorcycle;
+import vehicle.Truck;
+import vehicle.Vehicle;
 
 import java.sql.*;
 import java.util.ArrayList;

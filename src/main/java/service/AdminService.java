@@ -1,8 +1,8 @@
-package main.java.service;
+package service;
 
-import main.java.dao.VehicleDAO;
-import main.java.vehicle.Vehicle;
-import main.java.vehicle.factory.VehicleFactory;
+import dao.VehicleDAO;
+import vehicle.Vehicle;
+import vehicle.factory.VehicleFactory;
 
 import java.sql.SQLException;
 import java.util.List;

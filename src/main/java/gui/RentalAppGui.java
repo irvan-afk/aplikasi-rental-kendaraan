@@ -1,11 +1,11 @@
-package main.java.gui;
+package gui;
 
-import main.java.dao.VehicleDAO;
-import main.java.service.AdminService;
-import main.java.vehicle.Vehicle;
-import main.java.vehicle.factory.CarFactory;
-import main.java.vehicle.factory.MotorcycleFactory;
-import main.java.vehicle.factory.TruckFactory;
+import dao.VehicleDAO;
+import service.AdminService;
+import vehicle.Vehicle;
+import vehicle.factory.CarFactory;
+import vehicle.factory.MotorcycleFactory;
+import vehicle.factory.TruckFactory;
 
 import javax.swing.*;
 import java.awt.*;
@@ -194,9 +194,5 @@ public class RentalAppGui extends JFrame {
         } catch (Exception ex) {
             displayArea.setText("Error: " + ex.getMessage());
         }
-    }
-
-    public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new RentalAppGui().setVisible(true));
     }
 }

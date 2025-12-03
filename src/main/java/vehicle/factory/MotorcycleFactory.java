@@ -1,7 +1,7 @@
-package main.java.vehicle.factory;
+package vehicle.factory;
 
-import main.java.vehicle.Motorcycle;
-import main.java.vehicle.Vehicle;
+import vehicle.Motorcycle;
+import vehicle.Vehicle;
 
 public class MotorcycleFactory extends VehicleFactory {
     @Override
