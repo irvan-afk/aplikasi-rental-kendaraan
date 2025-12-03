@@ -1,59 +1,67 @@
 package gui;
 
-import service.AuthService;
+import java.awt.GridLayout;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPasswordField;
+import javax.swing.JTextField;
+
+import dao.UserDAO;
 
 public class LoginGui extends JFrame {
-
-    private final AuthService authService;
-    private JTextField usernameField;
-    private JPasswordField passwordField;
+    private JTextField userField;
+    private JPasswordField passField;
+    private UserDAO userDAO;
 
     public LoginGui() {
-        this.authService = new AuthService();
-
-        setTitle("Admin Login");
-        setSize(400, 200);
+        userDAO = new UserDAO();
+        setTitle("Login Rental Kendaraan");
+        setSize(300, 150);
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
+        setLayout(new GridLayout(3, 2, 5, 5));
 
-        JPanel panel = new JPanel(new GridLayout(3, 2, 10, 10));
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
+        add(new JLabel("Username:"));
+        userField = new JTextField();
+        add(userField);
 
-        panel.add(new JLabel("Username:"));
-        usernameField = new JTextField();
-        panel.add(usernameField);
-
-        panel.add(new JLabel("Password:"));
-        passwordField = new JPasswordField();
-        panel.add(passwordField);
+        add(new JLabel("Password:"));
+        passField = new JPasswordField();
+        add(passField);
 
         JButton loginButton = new JButton("Login");
-        panel.add(new JLabel()); // Empty label for spacing
-        panel.add(loginButton);
-
-        add(panel);
+        add(new JLabel("")); // spacer
+        add(loginButton);
 
         loginButton.addActionListener(e -> handleLogin());
     }
 
     private void handleLogin() {
-        String username = usernameField.getText();
-        String password = new String(passwordField.getPassword());
+        String user = userField.getText();
+        String pass = new String(passField.getPassword());
 
-        if (authService.authenticate(username, password)) {
-            // If authenticated, open the main app and close the login window
-            SwingUtilities.invokeLater(() -> {
-                new RentalAppGui().setVisible(true);
-                this.dispose();
-            });
-        } else {
-            JOptionPane.showMessageDialog(this,
-                    "Invalid username or password.",
-                    "Login Failed",
-                    JOptionPane.ERROR_MESSAGE);
+        try {
+            String role = userDAO.authenticate(user, pass);
+            if (role != null) {
+                this.dispose(); // Tutup window login
+                if (role.equalsIgnoreCase("ADMIN")) {
+                    // Buka GUI Admin yang sudah kamu punya
+                    new AdminAppGui().setVisible(true);
+                } else {
+                    // Buka GUI Pelanggan (Kita buat di langkah 5)
+                    new CustomerAppGui().setVisible(true);
+                }
+            } else {
+                JOptionPane.showMessageDialog(this, "Username atau Password salah!");
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+            JOptionPane.showMessageDialog(this, "Database Error: " + ex.getMessage());
         }
     }
+    
+    // Update Main.java kamu nanti untuk memanggil ini dulu
 }

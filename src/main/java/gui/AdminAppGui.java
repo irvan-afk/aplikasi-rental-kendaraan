@@ -7,16 +7,26 @@ import vehicle.factory.CarFactory;
 import vehicle.factory.MotorcycleFactory;
 import vehicle.factory.TruckFactory;
 
-import javax.swing.*;
-import java.awt.*;
+// import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.GridLayout;
 import java.util.List;
+import java.awt.Font;
 
-public class RentalAppGui extends JFrame {
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JFrame;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTextArea;
+
+public class AdminAppGui extends JFrame {
 
     private AdminService adminService;
     private JTextArea displayArea;
 
-    public RentalAppGui() {
+    public AdminAppGui() {
         // Init service & DAO
         VehicleDAO dao = new VehicleDAO();
         adminService = new AdminService(dao);

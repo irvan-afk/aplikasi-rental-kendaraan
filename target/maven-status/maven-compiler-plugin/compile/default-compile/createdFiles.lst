@@ -3,16 +3,17 @@ pricing\WeeklyPricing.class
 vehicle\Truck.class
 vehicle\factory\MotorcycleFactory.class
 pricing\HourlyPricing.class
-service\AuthService.class
 vehicle\factory\VehicleFactory.class
 app\Main.class
 rental\RentalServiceFacade.class
 gui\LoginGui.class
+gui\AdminAppGui.class
 dao\VehicleDAO.class
 service\AdminService.class
 dao\UserDAO.class
 vehicle\Car.class
 vehicle\Motorcycle.class
+gui\CustomerAppGui.class
 vehicle\Vehicle.class
 db\ConnectionManager.class
 vehicle\factory\TruckFactory.class
@@ -21,6 +22,6 @@ pricing\DailyPricing.class
 rental\PaymentService.class
 pricing\PricingStrategy.class
 rental\NotificationService.class
-gui\RentalAppGui.class
+pricing\MonthlyPricing.class
 vehicle\factory\CarFactory.class
 rental\InventoryService.class

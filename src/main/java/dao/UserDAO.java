@@ -1,25 +1,26 @@
 package dao;
 
-import db.ConnectionManager;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 
-public class UserDAO {
+import db.ConnectionManager;
 
-    public boolean validate(String username, String password) throws SQLException {
-        String sql = "SELECT password FROM admins WHERE username = ?";
+public class UserDAO {
+    // Mereturn role jika login sukses, return null jika gagal
+    public String authenticate(String username, String password) throws SQLException {
+        String sql = "SELECT role FROM users WHERE username = ? AND password = ?";
         try (Connection conn = ConnectionManager.getDataSource().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, username);
+            ps.setString(2, password);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    String storedPassword = rs.getString("password");
-                    return storedPassword.equals(password);
+                    return rs.getString("role");
                 }
-                return false;
             }
         }
+        return null;
     }
 }

@@ -7,6 +7,10 @@ import vehicle.factory.VehicleFactory;
 import java.sql.SQLException;
 import java.util.List;
 
+import dao.VehicleDAO;
+import vehicle.Vehicle;
+import vehicle.factory.VehicleFactory;
+
 public class AdminService {
 
     private VehicleDAO vehicleDAO;

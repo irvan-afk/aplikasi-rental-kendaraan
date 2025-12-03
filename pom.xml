@@ -16,7 +16,6 @@
     </properties>
 
     <dependencies>
-
         <!-- PostgreSQL JDBC Driver -->
         <dependency>
             <groupId>org.postgresql</groupId>
@@ -24,14 +23,12 @@
             <version>42.6.0</version>
         </dependency>
 
-        <!-- HikariCP (Connection Pool) -->
         <dependency>
             <groupId>com.zaxxer</groupId>
             <artifactId>HikariCP</artifactId>
             <version>5.0.1</version>
         </dependency>
 
-        <!-- JUnit 5 untuk testing -->
         <dependency>
             <groupId>org.junit.jupiter</groupId>
             <artifactId>junit-jupiter-api</artifactId>
@@ -78,8 +75,8 @@
                 </configuration>
                 <executions>
                     <execution>
-                        <id>make-assembly</id> <!-- this is used for inheritance merges -->
-                        <phase>package</phase> <!-- bind to the packaging phase -->
+                        <id>make-assembly</id> 
+                        <phase>package</phase> 
                         <goals>
                             <goal>single</goal>
                         </goals>
@@ -88,6 +85,5 @@
             </plugin>
         </plugins>
     </build>
-
 
 </project>

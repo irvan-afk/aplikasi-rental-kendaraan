@@ -1,4 +1,18 @@
--- vehicles
+-- 1. Hapus tabel lama jika ada (agar bersih)
+DROP TABLE IF EXISTS rentals;
+DROP TABLE IF EXISTS customers;
+DROP TABLE IF EXISTS vehicles;
+DROP TABLE IF EXISTS users;
+
+-- 2. Buat tabel users TERLEBIH DAHULU (karena akan dipanggil oleh customers)
+CREATE TABLE users (
+    id SERIAL PRIMARY KEY,
+    username VARCHAR(50) UNIQUE NOT NULL,
+    password VARCHAR(50) NOT NULL,
+    role VARCHAR(20) NOT NULL
+);
+
+-- 3. Buat tabel vehicles
 CREATE TABLE vehicles (
     id SERIAL PRIMARY KEY,
     plate VARCHAR(20) UNIQUE NOT NULL,
@@ -9,15 +23,16 @@ CREATE TABLE vehicles (
     available BOOLEAN DEFAULT TRUE
 );
 
--- customers
+-- 4. Buat tabel customers (Sekarang aman karena tabel users sudah ada)
 CREATE TABLE customers (
     id SERIAL PRIMARY KEY,
+    user_id INTEGER UNIQUE REFERENCES users(id), -- Relasi ke users
     name VARCHAR(100) NOT NULL,
     email VARCHAR(100) UNIQUE,
     phone VARCHAR(30)
 );
 
--- rentals
+-- 5. Buat tabel rentals
 CREATE TABLE rentals (
     id SERIAL PRIMARY KEY,
     vehicle_id INTEGER NOT NULL REFERENCES vehicles(id),
@@ -29,12 +44,6 @@ CREATE TABLE rentals (
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
 );
 
--- admins
-CREATE TABLE admins (
-    id SERIAL PRIMARY KEY,
-    username VARCHAR(50) UNIQUE NOT NULL,
-    password VARCHAR(255) NOT NULL
-);
-
--- default admin
-INSERT INTO admins (username, password) VALUES ('admin', 'admin');
+-- 6. Masukkan Data Dummy
+INSERT INTO users (username, password, role) VALUES ('admin', 'admin123', 'ADMIN');
+INSERT INTO users (username, password, role) VALUES ('user', 'user123', 'CUSTOMER');
