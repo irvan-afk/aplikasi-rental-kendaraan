@@ -21,6 +21,7 @@ rental\InvoiceService.class
 gui\RegisterGui.class
 pricing\DailyPricing.class
 rental\PaymentService.class
+gui\AdminAppGui$1.class
 pricing\PricingStrategy.class
 rental\NotificationService.class
 pricing\MonthlyPricing.class

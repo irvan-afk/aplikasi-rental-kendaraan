@@ -1,5 +1,29 @@
 package gui;
 
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.GridLayout;
+import java.util.List;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.JTextField;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.border.EmptyBorder;
+import javax.swing.table.DefaultTableModel;
+import javax.swing.table.JTableHeader;
+
 import dao.VehicleDAO;
 import service.AdminService;
 import vehicle.Vehicle;
@@ -7,210 +31,266 @@ import vehicle.factory.CarFactory;
 import vehicle.factory.MotorcycleFactory;
 import vehicle.factory.TruckFactory;
 
-// import java.awt.*;
-import java.awt.BorderLayout;
-import java.awt.GridLayout;
-import java.util.List;
-import java.awt.Font;
-
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JFrame;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JScrollPane;
-import javax.swing.JTextArea;
-
 public class AdminAppGui extends JFrame {
 
     private AdminService adminService;
-    private JTextArea displayArea;
+    private JTable vehicleTable;
+    private DefaultTableModel tableModel;
 
     public AdminAppGui() {
         // Init service & DAO
         VehicleDAO dao = new VehicleDAO();
         adminService = new AdminService(dao);
 
-        setTitle("Sistem Rental Kendaraan");
-        setSize(700, 500);
+        setTitle("Sistem Rental - Administrator Mode");
+        setSize(900, 600); // Lebar ditambah agar tabel muat
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
-        JPanel mainPanel = new JPanel(new BorderLayout(10, 10));
-        mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
+        // Layout Utama
+        setLayout(new BorderLayout());
 
-        // Buttons
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 5, 10, 0)); // Changed to 1x5
-        JButton viewButton = new JButton("Lihat Kendaraan");
-        JButton rentButton = new JButton("Tambah Kendaraan");
-        JButton updateButton = new JButton("Update Kendaraan");
-        JButton returnButton = new JButton("Hapus Kendaraan");
-        JButton customerViewButton = new JButton("Halaman Customer"); // New button
+        // 1. HEADER PANEL
+        JPanel headerPanel = new JPanel(new BorderLayout());
+        headerPanel.setBackground(new Color(50, 100, 150)); // Biru tema
+        
+        JLabel titleLabel = new JLabel("Dashboard Admin", SwingConstants.CENTER);
+        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 22));
+        titleLabel.setForeground(Color.WHITE);
+        titleLabel.setBorder(new EmptyBorder(20, 0, 20, 0));
+        
+        headerPanel.add(titleLabel, BorderLayout.CENTER);
+        
+        // 2. BUTTON PANEL (NAVIGASI)
+        JPanel navPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
+        navPanel.setBackground(new Color(230, 230, 230)); // Abu-abu muda
+        
+        JButton viewButton = createStyledButton("Refresh Data", new Color(100, 100, 100));
+        JButton rentButton = createStyledButton("Tambah Baru", new Color(50, 150, 50)); // Hijau
+        JButton updateButton = createStyledButton("Edit Data", new Color(200, 140, 0)); // Oranye
+        JButton returnButton = createStyledButton("Hapus Data", new Color(200, 50, 50)); // Merah
+        JButton customerViewButton = createStyledButton("Mode Customer", new Color(50, 100, 150)); // Biru
 
-        buttonPanel.add(viewButton);
-        buttonPanel.add(rentButton);
-        buttonPanel.add(updateButton);
-        buttonPanel.add(returnButton);
-        buttonPanel.add(customerViewButton); // Add new button to panel
+        navPanel.add(viewButton);
+        navPanel.add(rentButton);
+        navPanel.add(updateButton);
+        navPanel.add(returnButton);
+        navPanel.add(customerViewButton);
 
-        // Display area
-        displayArea = new JTextArea("Selamat datang di Sistem Rental Kendaraan!\n");
-        displayArea.setFont(new Font("Monospaced", Font.PLAIN, 12));
-        displayArea.setEditable(false);
-        JScrollPane scrollPane = new JScrollPane(displayArea);
+        // Gabungkan Header Title dan Navigasi di bagian ATAS (NORTH)
+        JPanel topContainer = new JPanel(new BorderLayout());
+        topContainer.add(headerPanel, BorderLayout.NORTH);
+        topContainer.add(navPanel, BorderLayout.SOUTH);
+        add(topContainer, BorderLayout.NORTH);
 
-        mainPanel.add(buttonPanel, BorderLayout.NORTH);
-        mainPanel.add(scrollPane, BorderLayout.CENTER);
+        // 3. TABLE AREA (CENTER) - PENGGANTI TEXT AREA
+        // Nama Kolom Tabel
+        String[] columnNames = {"ID", "Plat Nomor", "Tipe", "Merk", "Model", "Harga Dasar", "Status"};
+        
+        // Model tabel (non-editable cell)
+        tableModel = new DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false; // Agar sel tidak bisa diedit langsung (harus via tombol edit)
+            }
+        };
 
-        add(mainPanel);
+        vehicleTable = new JTable(tableModel);
+        vehicleTable.setFillsViewportHeight(true);
+        vehicleTable.setRowHeight(25); // Tinggi baris agar tidak rapat
+        vehicleTable.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        vehicleTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); // Hanya bisa pilih 1 baris
+
+        // Styling Header Tabel
+        JTableHeader header = vehicleTable.getTableHeader();
+        header.setFont(new Font("SansSerif", Font.BOLD, 14));
+        header.setBackground(new Color(220, 220, 220));
+        header.setForeground(Color.BLACK);
+
+        JScrollPane scrollPane = new JScrollPane(vehicleTable);
+        scrollPane.setBorder(BorderFactory.createTitledBorder("Daftar Inventaris Kendaraan"));
+        
+        JPanel centerPanel = new JPanel(new BorderLayout());
+        centerPanel.setBorder(new EmptyBorder(10, 20, 10, 20)); // Margin kiri-kanan
+        centerPanel.add(scrollPane, BorderLayout.CENTER);
+        
+        add(centerPanel, BorderLayout.CENTER);
+
+        // Load data awal
+        viewVehicles();
 
         // ===== EVENT HANDLERS =====
-
-        // 1) LIHAT KENDARAAN
         viewButton.addActionListener(e -> viewVehicles());
-
-        // 2) TAMBAH KENDARAAN
         rentButton.addActionListener(e -> addVehicleDialog());
-
-        // 3) HAPUS KENDARAAN
         returnButton.addActionListener(e -> deleteVehicleDialog());
-        
-        // 4) UPDATE KENDARAAN
         updateButton.addActionListener(e -> updateVehicleDialog());
-
-        // 5) GO TO CUSTOMER VIEW
         customerViewButton.addActionListener(e -> {
             new CustomerAppGui().setVisible(true);
             this.dispose();
         });
     }
 
-    // LIST VEHICLES FROM DB
+    // Helper untuk styling tombol
+    private JButton createStyledButton(String text, Color bg) {
+        JButton btn = new JButton(text);
+        btn.setBackground(bg);
+        btn.setForeground(Color.WHITE);
+        btn.setFont(new Font("SansSerif", Font.BOLD, 12));
+        btn.setFocusPainted(false);
+        btn.setPreferredSize(new Dimension(140, 35));
+        return btn;
+    }
+
+    // --- LOGIC METHOD ---
+
     private void viewVehicles() {
         try {
-            List<Vehicle> list = adminService.listVehicles();
-            StringBuilder sb = new StringBuilder();
-            sb.append(String.format("%-5s | %-15s | %-12s | %-20s | %-10s | %s\n", "ID", "PLAT NOMOR", "TIPE", "MERK & MODEL", "HARGA", "TERSEDIA"));
-            sb.append("----------------------------------------------------------------------------------------------------\n");
+            // Bersihkan data lama di tabel
+            tableModel.setRowCount(0);
 
-            if (list.isEmpty()) {
-                sb.append("Belum ada kendaraan.\n");
-            } else {
-                for (Vehicle v : list) {
-                    String brandModel = v.getBrand() + " " + v.getModel();
-                    sb.append(String.format("%-5d | %-15s | %-12s | %-20s | Rp %-7.0f | %s\n",
-                            v.getId(),
-                            v.getPlateNumber(),
-                            v.getType(),
-                            brandModel,
-                            v.getBasePrice(),
-                            v.isAvailable() ? "Ya" : "Tidak"));
-                }
+            List<Vehicle> list = adminService.listVehicles();
+            for (Vehicle v : list) {
+                String status = v.isAvailable() ? "Tersedia" : "Disewa";
+                // Masukkan data baris per baris
+                Object[] rowData = {
+                    v.getId(),
+                    v.getPlateNumber(),
+                    v.getType(),
+                    v.getBrand(),
+                    v.getModel(),
+                    String.format("Rp %,.0f", v.getBasePrice()), // Format Rupiah
+                    status
+                };
+                tableModel.addRow(rowData);
             }
-            displayArea.setText(sb.toString());
         } catch (Exception ex) {
-            displayArea.setText("Error: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, "Gagal memuat data: " + ex.getMessage());
         }
     }
 
-    // ADD VEHICLE (GUI DIALOG)
     private void addVehicleDialog() {
+        // Panel input kustom untuk JDialog
+        JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10)); // 2 kolom
+        
         String[] options = {"Car", "Motorcycle", "Truck"};
-        String type = (String) JOptionPane.showInputDialog(
-                this,
-                "Pilih jenis kendaraan:",
-                "Tambah Kendaraan",
-                JOptionPane.QUESTION_MESSAGE,
-                null,
-                options,
-                options[0]
-        );
+        JComboBox<String> typeCombo = new JComboBox<>(options);
+        
+        JTextField plateField = new JTextField();
+        JTextField brandField = new JTextField();
+        JTextField modelField = new JTextField();
+        JTextField priceField = new JTextField();
 
-        if (type == null) return;
+        panel.add(new JLabel("Tipe Kendaraan:"));
+        panel.add(typeCombo);
+        panel.add(new JLabel("Nomor Plat:"));
+        panel.add(plateField);
+        panel.add(new JLabel("Merk:"));
+        panel.add(brandField);
+        panel.add(new JLabel("Model:"));
+        panel.add(modelField);
+        panel.add(new JLabel("Harga Dasar (Per Hari):"));
+        panel.add(priceField);
 
-        String plate = JOptionPane.showInputDialog(this, "Nomor Plat:");
-        String brand = JOptionPane.showInputDialog(this, "Merk:");
-        String model = JOptionPane.showInputDialog(this, "Model:");
-        String priceStr = JOptionPane.showInputDialog(this, "Harga dasar per hari:");
+        int result = JOptionPane.showConfirmDialog(this, panel, "Tambah Kendaraan Baru",
+                JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
 
-        if (plate == null || brand == null || model == null || priceStr == null) return;
+        if (result == JOptionPane.OK_OPTION) {
+            try {
+                String type = (String) typeCombo.getSelectedItem();
+                String plate = plateField.getText();
+                String brand = brandField.getText();
+                String model = modelField.getText();
+                double price = Double.parseDouble(priceField.getText());
 
-        try {
-            double basePrice = Double.parseDouble(priceStr);
+                if(plate.isEmpty() || brand.isEmpty() || model.isEmpty()) {
+                    JOptionPane.showMessageDialog(this, "Semua data wajib diisi!");
+                    return;
+                }
 
-            // pilih factory
-            switch (type) {
-                case "Car":
-                    adminService.addVehicle(new CarFactory(), plate, brand, model, basePrice);
-                    break;
-                case "Motorcycle":
-                    adminService.addVehicle(new MotorcycleFactory(), plate, brand, model, basePrice);
-                    break;
-                case "Truck":
-                    adminService.addVehicle(new TruckFactory(), plate, brand, model, basePrice);
-                    break;
+                switch (type) {
+                    case "Car": adminService.addVehicle(new CarFactory(), plate, brand, model, price); break;
+                    case "Motorcycle": adminService.addVehicle(new MotorcycleFactory(), plate, brand, model, price); break;
+                    case "Truck": adminService.addVehicle(new TruckFactory(), plate, brand, model, price); break;
+                }
+                viewVehicles();
+                JOptionPane.showMessageDialog(this, "Berhasil ditambahkan!");
+            } catch (NumberFormatException ex) {
+                JOptionPane.showMessageDialog(this, "Harga harus berupa angka!", "Input Error", JOptionPane.ERROR_MESSAGE);
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
             }
-
-            displayArea.append("Kendaraan berhasil ditambahkan!\n");
-            viewVehicles();
-
-        } catch (Exception ex) {
-            displayArea.setText("Error: " + ex.getMessage());
         }
     }
 
     private void deleteVehicleDialog() {
-        String idStr = JOptionPane.showInputDialog(this, "Masukkan ID kendaraan yang akan dihapus:");
+        int selectedRow = vehicleTable.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Pilih baris kendaraan yang ingin dihapus terlebih dahulu!");
+            return;
+        }
 
-        if (idStr == null) return;
+        // Ambil ID dari kolom ke-0 (ID)
+        int id = (int) tableModel.getValueAt(selectedRow, 0);
+        String plate = (String) tableModel.getValueAt(selectedRow, 1);
 
-        try {
-            int id = Integer.parseInt(idStr);
-            adminService.deleteVehicle(id);
-            displayArea.append("Kendaraan ID " + id + " berhasil dihapus!\n");
-            viewVehicles();
-        } catch (Exception ex) {
-            displayArea.setText("Error: " + ex.getMessage());
+        int confirm = JOptionPane.showConfirmDialog(this, 
+            "Yakin ingin menghapus kendaraan plat " + plate + "?", 
+            "Konfirmasi Hapus", JOptionPane.YES_NO_OPTION);
+
+        if (confirm == JOptionPane.YES_OPTION) {
+            try {
+                adminService.deleteVehicle(id);
+                viewVehicles();
+                JOptionPane.showMessageDialog(this, "Data berhasil dihapus.");
+            } catch (Exception ex) {
+                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+            }
         }
     }
 
     private void updateVehicleDialog() {
-        String idStr = JOptionPane.showInputDialog(this, "Masukkan ID kendaraan yang akan diupdate:");
+        int selectedRow = vehicleTable.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(this, "Pilih baris kendaraan yang ingin diedit terlebih dahulu!");
+            return;
+        }
 
-        if (idStr == null) return;
+        // Ambil ID dari tabel
+        int id = (int) tableModel.getValueAt(selectedRow, 0);
 
         try {
-            int id = Integer.parseInt(idStr);
-            Vehicle vehicle = adminService.findById(id);
+            Vehicle v = adminService.findById(id);
+            if (v == null) return;
 
-            if (vehicle == null) {
-                JOptionPane.showMessageDialog(this, "Kendaraan dengan ID " + id + " tidak ditemukan.", "Error", JOptionPane.ERROR_MESSAGE);
-                return;
+            // Panel input dengan data lama terisi
+            JPanel panel = new JPanel(new GridLayout(0, 2, 10, 10));
+            JTextField plateField = new JTextField(v.getPlateNumber());
+            JTextField brandField = new JTextField(v.getBrand());
+            JTextField modelField = new JTextField(v.getModel());
+            JTextField priceField = new JTextField(String.format("%.0f", v.getBasePrice())); // Format angka polos
+
+            panel.add(new JLabel("Nomor Plat:")); panel.add(plateField);
+            panel.add(new JLabel("Merk:")); panel.add(brandField);
+            panel.add(new JLabel("Model:")); panel.add(modelField);
+            panel.add(new JLabel("Harga Dasar:")); panel.add(priceField);
+
+            int result = JOptionPane.showConfirmDialog(this, panel, "Edit Data Kendaraan",
+                    JOptionPane.OK_CANCEL_OPTION, JOptionPane.PLAIN_MESSAGE);
+
+            if (result == JOptionPane.OK_OPTION) {
+                v.setPlateNumber(plateField.getText());
+                v.setBrand(brandField.getText());
+                v.setModel(modelField.getText());
+                v.setBasePrice(Double.parseDouble(priceField.getText()));
+                
+                adminService.updateVehicle(v);
+                viewVehicles();
+                JOptionPane.showMessageDialog(this, "Data berhasil diupdate!");
             }
-
-            String plate = (String) JOptionPane.showInputDialog(this, "Nomor Plat:", "Update Kendaraan", JOptionPane.PLAIN_MESSAGE, null, null, vehicle.getPlateNumber());
-            String brand = (String) JOptionPane.showInputDialog(this, "Merk:", "Update Kendaraan", JOptionPane.PLAIN_MESSAGE, null, null, vehicle.getBrand());
-            String model = (String) JOptionPane.showInputDialog(this, "Model:", "Update Kendaraan", JOptionPane.PLAIN_MESSAGE, null, null, vehicle.getModel());
-            String priceStr = (String) JOptionPane.showInputDialog(this, "Harga dasar per hari:", "Update Kendaraan", JOptionPane.PLAIN_MESSAGE, null, null, vehicle.getBasePrice());
-
-            if (plate == null || brand == null || model == null || priceStr == null) return;
-
-            double basePrice = Double.parseDouble(priceStr);
-
-            vehicle.setPlateNumber(plate);
-            vehicle.setBrand(brand);
-            vehicle.setModel(model);
-            vehicle.setBasePrice(basePrice);
-
-            adminService.updateVehicle(vehicle);
-
-            displayArea.append("Kendaraan ID " + id + " berhasil diupdate!\n");
-            viewVehicles();
-
         } catch (NumberFormatException ex) {
-            JOptionPane.showMessageDialog(this, "ID harus berupa angka.", "Error", JOptionPane.ERROR_MESSAGE);
+            JOptionPane.showMessageDialog(this, "Harga harus angka!");
         } catch (Exception ex) {
-            displayArea.setText("Error: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
         }
     }
 }
