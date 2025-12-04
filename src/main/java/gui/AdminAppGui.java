@@ -24,6 +24,7 @@ import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
 
+import app.Main;
 import dao.VehicleDAO;
 import service.AdminService;
 import vehicle.Vehicle;
@@ -69,13 +70,13 @@ public class AdminAppGui extends JFrame {
         JButton rentButton = createStyledButton("Tambah Baru", new Color(50, 150, 50)); // Hijau
         JButton updateButton = createStyledButton("Edit Data", new Color(200, 140, 0)); // Oranye
         JButton returnButton = createStyledButton("Hapus Data", new Color(200, 50, 50)); // Merah
-        JButton customerViewButton = createStyledButton("Mode Customer", new Color(50, 100, 150)); // Biru
+        JButton logoutButton = createStyledButton("Logout", new Color(50, 100, 150)); // Biru   
 
         navPanel.add(viewButton);
         navPanel.add(rentButton);
         navPanel.add(updateButton);
         navPanel.add(returnButton);
-        navPanel.add(customerViewButton);
+        navPanel.add(logoutButton); 
 
         // Gabungkan Header Title dan Navigasi di bagian ATAS (NORTH)
         JPanel topContainer = new JPanel(new BorderLayout());
@@ -124,9 +125,9 @@ public class AdminAppGui extends JFrame {
         rentButton.addActionListener(e -> addVehicleDialog());
         returnButton.addActionListener(e -> deleteVehicleDialog());
         updateButton.addActionListener(e -> updateVehicleDialog());
-        customerViewButton.addActionListener(e -> {
-            new CustomerAppGui().setVisible(true);
+        logoutButton.addActionListener(e -> {
             this.dispose();
+            Main.showLoginWorkflow();
         });
     }
 
