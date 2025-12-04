@@ -23,7 +23,7 @@ public class Main {
                 }
             }
         } catch (Exception e) {
-            // Jika Nimbus tidak tersedia, lanjut dengan default
+            
         }
 
         try {

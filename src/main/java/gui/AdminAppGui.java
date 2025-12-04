@@ -34,7 +34,9 @@ import vehicle.factory.TruckFactory;
 
 public class AdminAppGui extends JFrame {
 
-    private AdminService adminService;
+    private static final String FONT_NAME = "SansSerif";
+    private static final String ERROR_PREFIX = "Error: ";
+    private transient AdminService adminService;
     private JTable vehicleTable;
     private DefaultTableModel tableModel;
 
@@ -45,7 +47,7 @@ public class AdminAppGui extends JFrame {
 
         setTitle("Sistem Rental - Administrator Mode");
         setSize(900, 600); // Lebar ditambah agar tabel muat
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         // Layout Utama
@@ -56,7 +58,7 @@ public class AdminAppGui extends JFrame {
         headerPanel.setBackground(new Color(50, 100, 150)); // Biru tema
         
         JLabel titleLabel = new JLabel("Dashboard Admin", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 22));
+        titleLabel.setFont(new Font(FONT_NAME, Font.BOLD, 22));
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setBorder(new EmptyBorder(20, 0, 20, 0));
         
@@ -99,12 +101,12 @@ public class AdminAppGui extends JFrame {
         vehicleTable = new JTable(tableModel);
         vehicleTable.setFillsViewportHeight(true);
         vehicleTable.setRowHeight(25); // Tinggi baris agar tidak rapat
-        vehicleTable.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        vehicleTable.setFont(new Font(FONT_NAME, Font.PLAIN, 14));
         vehicleTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); // Hanya bisa pilih 1 baris
 
         // Styling Header Tabel
         JTableHeader header = vehicleTable.getTableHeader();
-        header.setFont(new Font("SansSerif", Font.BOLD, 14));
+        header.setFont(new Font(FONT_NAME, Font.BOLD, 14));
         header.setBackground(new Color(220, 220, 220));
         header.setForeground(Color.BLACK);
 
@@ -136,7 +138,7 @@ public class AdminAppGui extends JFrame {
         JButton btn = new JButton(text);
         btn.setBackground(bg);
         btn.setForeground(Color.WHITE);
-        btn.setFont(new Font("SansSerif", Font.BOLD, 12));
+        btn.setFont(new Font(FONT_NAME, Font.BOLD, 12));
         btn.setFocusPainted(false);
         btn.setPreferredSize(new Dimension(140, 35));
         return btn;
@@ -212,13 +214,15 @@ public class AdminAppGui extends JFrame {
                     case "Car": adminService.addVehicle(new CarFactory(), plate, brand, model, price); break;
                     case "Motorcycle": adminService.addVehicle(new MotorcycleFactory(), plate, brand, model, price); break;
                     case "Truck": adminService.addVehicle(new TruckFactory(), plate, brand, model, price); break;
+                    default:
+                        throw new IllegalArgumentException("Unknown vehicle type: " + type);
                 }
                 viewVehicles();
                 JOptionPane.showMessageDialog(this, "Berhasil ditambahkan!");
             } catch (NumberFormatException ex) {
                 JOptionPane.showMessageDialog(this, "Harga harus berupa angka!", "Input Error", JOptionPane.ERROR_MESSAGE);
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
+                JOptionPane.showMessageDialog(this, ERROR_PREFIX + ex.getMessage(), "Database Error", JOptionPane.ERROR_MESSAGE);
             }
         }
     }
@@ -244,7 +248,7 @@ public class AdminAppGui extends JFrame {
                 viewVehicles();
                 JOptionPane.showMessageDialog(this, "Data berhasil dihapus.");
             } catch (Exception ex) {
-                JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+                JOptionPane.showMessageDialog(this, ERROR_PREFIX + ex.getMessage());
             }
         }
     }
@@ -291,7 +295,7 @@ public class AdminAppGui extends JFrame {
         } catch (NumberFormatException ex) {
             JOptionPane.showMessageDialog(this, "Harga harus angka!");
         } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Error: " + ex.getMessage());
+            JOptionPane.showMessageDialog(this, ERROR_PREFIX + ex.getMessage());
         }
     }
 }
