@@ -2,7 +2,7 @@ package app;
 
 import javax.swing.SwingUtilities;
 
-import gui.LoginGui;
+import gui.CustomerAppGui;
 
 public class Main {
     public static void main(String[] args) {
@@ -10,8 +10,8 @@ public class Main {
         SwingUtilities.invokeLater(() -> {
             try {
                 // Membuka jendela Login sebagai pintu gerbang aplikasi
-                LoginGui loginGui = new LoginGui();
-                loginGui.setVisible(true);
+                CustomerAppGui customerAppGui = new CustomerAppGui();
+                customerAppGui.setVisible(true);
             } catch (Exception e) {
                 e.printStackTrace();
                 System.out.println("Gagal menjalankan aplikasi: " + e.getMessage());

@@ -40,16 +40,18 @@ public class AdminAppGui extends JFrame {
         mainPanel.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
 
         // Buttons
-        JPanel buttonPanel = new JPanel(new GridLayout(1, 4, 10, 0));
+        JPanel buttonPanel = new JPanel(new GridLayout(1, 5, 10, 0)); // Changed to 1x5
         JButton viewButton = new JButton("Lihat Kendaraan");
         JButton rentButton = new JButton("Tambah Kendaraan");
         JButton updateButton = new JButton("Update Kendaraan");
         JButton returnButton = new JButton("Hapus Kendaraan");
+        JButton customerViewButton = new JButton("Halaman Customer"); // New button
 
         buttonPanel.add(viewButton);
         buttonPanel.add(rentButton);
         buttonPanel.add(updateButton);
         buttonPanel.add(returnButton);
+        buttonPanel.add(customerViewButton); // Add new button to panel
 
         // Display area
         displayArea = new JTextArea("Selamat datang di Sistem Rental Kendaraan!\n");
@@ -75,6 +77,12 @@ public class AdminAppGui extends JFrame {
         
         // 4) UPDATE KENDARAAN
         updateButton.addActionListener(e -> updateVehicleDialog());
+
+        // 5) GO TO CUSTOMER VIEW
+        customerViewButton.addActionListener(e -> {
+            new CustomerAppGui().setVisible(true);
+            this.dispose();
+        });
     }
 
     // LIST VEHICLES FROM DB

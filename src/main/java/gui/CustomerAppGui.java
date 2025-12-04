@@ -25,16 +25,17 @@ public class CustomerAppGui extends JFrame {
     private JComboBox<String> durationTypeCombo;
     private JTextField durationField;
     private JLabel priceLabel;
+    private String currentUserRole = null; // Placeholder for logged-in user
 
     public CustomerAppGui() {
         dao = new VehicleDAO();
         facade = new RentalServiceFacade(dao);
 
         setTitle("Menu Pelanggan - Rental Kendaraan");
-        setSize(500, 300);
+        setSize(500, 350); // Adjusted size for new row
         setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
-        setLayout(new GridLayout(5, 2, 10, 10));
+        setLayout(new GridLayout(6, 2, 10, 10)); // Changed layout to 6x2
 
         // Komponen
         add(new JLabel("Pilih Kendaraan (Tersedia):"));
@@ -56,13 +57,43 @@ public class CustomerAppGui extends JFrame {
         add(checkPriceBtn);
         add(priceLabel);
 
+        JButton loginBtn = new JButton("Login");
+        JButton registerBtn = new JButton("Register");
+        add(loginBtn);
+        add(registerBtn);
+
         JButton bookBtn = new JButton("Sewa Sekarang");
-        add(new JLabel("")); // spacer
         add(bookBtn);
+        add(new JLabel("")); // spacer
 
         // Events
         checkPriceBtn.addActionListener(e -> calculatePrice());
         bookBtn.addActionListener(e -> processBooking());
+        loginBtn.addActionListener(e -> handleLogin());
+        registerBtn.addActionListener(e -> handleRegister());
+    }
+
+    private void handleRegister() {
+        RegisterGui registerDialog = new RegisterGui(this);
+        registerDialog.setVisible(true);
+    }
+
+    private void handleLogin() {
+        LoginGui loginDialog = new LoginGui(this);
+        loginDialog.setVisible(true); // This will block until the dialog is closed
+
+        String role = loginDialog.getAuthenticatedRole();
+        if (role != null) {
+            if (role.equalsIgnoreCase("ADMIN")) {
+                // If admin, open admin gui and close this one
+                new AdminAppGui().setVisible(true);
+                this.dispose();
+            } else {
+                // If customer, just update role and show message
+                this.currentUserRole = role;
+                JOptionPane.showMessageDialog(this, "Login berhasil! Role: " + role);
+            }
+        }
     }
 
     private void loadAvailableVehicles() {
@@ -107,6 +138,11 @@ public class CustomerAppGui extends JFrame {
     }
 
     private void processBooking() {
+        if (currentUserRole == null) {
+            JOptionPane.showMessageDialog(this, "Anda harus login terlebih dahulu untuk menyewa kendaraan!");
+            return;
+        }
+
         try {
             Vehicle v = (Vehicle) vehicleCombo.getSelectedItem();
             if (v == null) return;

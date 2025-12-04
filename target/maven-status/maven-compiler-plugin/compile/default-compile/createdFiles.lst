@@ -18,6 +18,7 @@ vehicle\Vehicle.class
 db\ConnectionManager.class
 vehicle\factory\TruckFactory.class
 rental\InvoiceService.class
+gui\RegisterGui.class
 pricing\DailyPricing.class
 rental\PaymentService.class
 pricing\PricingStrategy.class

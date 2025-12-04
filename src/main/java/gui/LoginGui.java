@@ -1,9 +1,10 @@
 package gui;
 
+import java.awt.Frame;
 import java.awt.GridLayout;
 
 import javax.swing.JButton;
-import javax.swing.JFrame;
+import javax.swing.JDialog;
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPasswordField;
@@ -11,17 +12,19 @@ import javax.swing.JTextField;
 
 import dao.UserDAO;
 
-public class LoginGui extends JFrame {
+public class LoginGui extends JDialog {
     private JTextField userField;
     private JPasswordField passField;
     private UserDAO userDAO;
+    private String authenticatedRole = null;
 
-    public LoginGui() {
+    public LoginGui(Frame owner) {
+        super(owner, "Login", true); // true for modal
         userDAO = new UserDAO();
-        setTitle("Login Rental Kendaraan");
+        
         setSize(300, 150);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        setLocationRelativeTo(null);
+        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        setLocationRelativeTo(owner);
         setLayout(new GridLayout(3, 2, 5, 5));
 
         add(new JLabel("Username:"));
@@ -46,14 +49,8 @@ public class LoginGui extends JFrame {
         try {
             String role = userDAO.authenticate(user, pass);
             if (role != null) {
-                this.dispose(); // Tutup window login
-                if (role.equalsIgnoreCase("ADMIN")) {
-                    // Buka GUI Admin yang sudah kamu punya
-                    new AdminAppGui().setVisible(true);
-                } else {
-                    // Buka GUI Pelanggan (Kita buat di langkah 5)
-                    new CustomerAppGui().setVisible(true);
-                }
+                this.authenticatedRole = role;
+                dispose(); // Tutup dialog
             } else {
                 JOptionPane.showMessageDialog(this, "Username atau Password salah!");
             }
@@ -63,5 +60,7 @@ public class LoginGui extends JFrame {
         }
     }
     
-    // Update Main.java kamu nanti untuk memanggil ini dulu
+    public String getAuthenticatedRole() {
+        return authenticatedRole;
+    }
 }

@@ -19,11 +19,16 @@ This project is a Java-based desktop application for managing a vehicle rental s
 
 The application follows a classic layered architecture:
 
-*   **Presentation Layer (GUI):** The `gui` package contains the main `RentalAppGui` class, which is a `JFrame` that provides the user interface.
-*   **Service Layer:** The `service` package contains the `AdminService` class, which encapsulates the business logic of the application.
-*   **Data Access Layer (DAO):** The `dao` package contains the `VehicleDAO` class, which is responsible for all database interactions related to vehicles. It uses a `ConnectionManager` to obtain database connections from a HikariCP connection pool.
+*   **Presentation Layer (GUI):** The `gui` package contains the application's user interfaces.
+    *   `LoginGui`: The initial entry point of the application for user authentication.
+    *   `AdminAppGui`: The main interface for administrators to manage vehicles.
+    *   `CustomerAppGui`: The interface for customers to view and rent vehicles.
+    The application determines which GUI to display based on the user's role after a successful login.
+*   **Service Layer:** The `service` package contains the `AdminService` class, which encapsulates the business logic for administrative tasks.
+*   **Data Access Layer (DAO):** The `dao` package contains `UserDAO` for authentication and `VehicleDAO` for vehicle data operations. It uses a `ConnectionManager` to obtain database connections from a HikariCP connection pool.
 *   **Domain Model:** The `vehicle` package contains the `Vehicle` base class and its subclasses (`Car`, `Motorcycle`, `Truck`). It also includes a `factory` subpackage for creating different types of vehicles.
-*   **Database:** The `resources/script.sql` file defines the database schema for the application. It includes tables for `vehicles`, `customers`, and `rentals`.
+*   **Configuration:** The `db` package contains `ConnectionManager`, which loads database credentials and connection pool settings from `src/main/resources/config.properties`.
+*   **Database:** The `resources/script.sql` file defines the database schema for the application. It includes tables for `vehicles`, `customers`, `rentals`, and `admins`.
 
 ## Building and Running
 
@@ -36,8 +41,15 @@ The application follows a classic layered architecture:
 ### Database Setup
 
 1.  Create a PostgreSQL database.
-2.  Execute the `src/main/resources/script.sql` file to create the necessary tables.
-3.  Configure the database connection in `src/main/java/db/ConnectionManager.java`. You will need to update the `URL`, `USER`, and `PASSWORD` constants with your database credentials.
+2.  Execute the `src/main/resources/script.sql` file on your database to create the necessary tables and the default admin user.
+3.  Create a file named `config.properties` in the `src/main/resources` directory.
+4.  Add the following properties to your `config.properties` file, replacing the placeholder values with your actual database credentials:
+    ```properties
+    db.url=jdbc:postgresql://localhost:5432/your_database
+    db.user=your_username
+    db.password=your_password
+    db.maxPoolSize=10
+    ```
 
 ### Build
 
