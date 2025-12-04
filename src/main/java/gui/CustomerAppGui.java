@@ -24,6 +24,7 @@ import pricing.HourlyPricing;
 import pricing.MonthlyPricing;
 import pricing.PricingStrategy;
 import rental.RentalServiceFacade;
+import gui.RentalProcessGui;
 import vehicle.Vehicle;
 
 public class CustomerAppGui extends JFrame {
@@ -190,25 +191,24 @@ public class CustomerAppGui extends JFrame {
     }
 
     private void processBooking() {
-        if (currentUserRole == null) {
-            int confirm = JOptionPane.showConfirmDialog(this, 
+    if (currentUserRole == null) {
+        int confirm = JOptionPane.showConfirmDialog(this,
                 "Anda belum login. Login sekarang?", "Perhatian", JOptionPane.YES_NO_OPTION);
-            if (confirm == JOptionPane.YES_OPTION) {
-                handleLogin();
-            }
-            return;
+        if (confirm == JOptionPane.YES_OPTION) {
+            handleLogin();
         }
-        try {
-            Vehicle v = (Vehicle) vehicleCombo.getSelectedItem();
-            if (v == null) return;
-            int duration = Integer.parseInt(durationField.getText());
-            PricingStrategy strategy = getSelectedStrategy();
-            facade.bookVehicle(v, strategy, duration);
-            JOptionPane.showMessageDialog(this, "Berhasil Menyewa Kendaraan!");
-            loadAvailableVehicles();
-            vehicleCombo.repaint();
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Gagal Booking: " + e.getMessage());
-        }
+        return;
     }
+
+    try {
+        Vehicle v = (Vehicle) vehicleCombo.getSelectedItem();
+        if (v == null) return;
+
+        // BUKA HALAMAN PROSES RENTAL
+        new RentalProcessGui(this, v, "Customer").setVisible(true);
+
+    } catch (Exception e) {
+        JOptionPane.showMessageDialog(this, "Gagal membuka proses rental:\n" + e.getMessage());
+    }
+}
 }
