@@ -2,41 +2,95 @@ package rental;
 
 import dao.VehicleDAO;
 import pricing.PricingStrategy;
+import rental.exception.RentalException;
 import vehicle.Vehicle;
 
 public class RentalServiceFacade {
-    private VehicleDAO vehicleDAO;
+
+    private final VehicleDAO vehicleDAO;
+    private final InventoryService inventoryService;
+    private final PaymentService paymentService;
+    private final InvoiceService invoiceService;
+    private final NotificationService notificationService;
 
     public RentalServiceFacade(VehicleDAO vehicleDAO) {
         this.vehicleDAO = vehicleDAO;
+        this.inventoryService = new InventoryService(vehicleDAO);
+        this.paymentService = new PaymentService();
+        this.invoiceService = new InvoiceService();
+        this.notificationService = new NotificationService();
     }
 
-    /**
-     * Method 1: Menghitung estimasi harga (Dipanggil oleh CustomerAppGui)
-     */
     public double calculateEstPrice(Vehicle v, PricingStrategy strategy, int duration) {
-        // Delegasikan perhitungan ke strategy pattern
         return strategy.calculatePrice(v.getBasePrice(), duration);
     }
 
-    /**
-     * Method 2: Melakukan booking (Dipanggil oleh CustomerAppGui)
-     */
     public void bookVehicle(Vehicle v, PricingStrategy strategy, int duration) throws Exception {
-        // 1. Hitung harga final (bisa disimpan ke DB nanti)
-        double totalCost = calculateEstPrice(v, strategy, duration);
+        double total = calculateEstPrice(v, strategy, duration);
 
-        // 2. Cek apakah kendaraan masih available (untuk mencegah race condition)
-        Vehicle currentVehicleState = vehicleDAO.findById(v.getId());
-        if (!currentVehicleState.isAvailable()) {
+        Vehicle current = vehicleDAO.findById(v.getId());
+        if (current == null) {
+            throw new Exception("Kendaraan tidak ditemukan!");
+        }
+
+        if (!current.isAvailable()) {
             throw new Exception("Maaf, kendaraan ini baru saja disewa orang lain!");
         }
 
-        // 3. Update status kendaraan di database menjadi tidak tersedia (false)
         vehicleDAO.updateAvailability(v.getId(), false);
 
-        // 4. (Opsional) Di masa depan, temanmu bisa menambahkan logika 
-        //    untuk insert ke tabel 'rentals' di sini.
-        System.out.println("Booking Berhasil: " + v.getPlateNumber() + " | Total: " + totalCost);
+        System.out.println("Booking berhasil untuk kendaraan " + v.getPlateNumber()
+                + " | Harga total: " + total);
+    }
+
+    public Invoice processCompleteBooking(
+            Vehicle vehicle,
+            PricingStrategy strategy,
+            int duration,
+            String customerName,
+            PaymentService.PaymentMethod method
+    ) throws Exception {
+
+        boolean reserved = false;
+
+        try {
+            if (vehicle == null) {
+                throw new RentalException(RentalException.ErrorCode.VEHICLE_NOT_FOUND);
+            }
+            if (duration <= 0) {
+                throw new RentalException(RentalException.ErrorCode.INVALID_DURATION);
+            }
+
+            if (!inventoryService.isVehicleAvailable(vehicle.getId())) {
+                throw new RentalException(RentalException.ErrorCode.VEHICLE_NOT_AVAILABLE);
+            }
+
+            inventoryService.reserveVehicle(vehicle.getId());
+            reserved = true;
+
+            double total = strategy.calculatePrice(vehicle.getBasePrice(), duration);
+
+            PaymentService.PaymentReceipt receipt =
+                    paymentService.processPayment(total, method, customerName);
+
+            Invoice invoice = invoiceService.generateInvoice(
+                    vehicle, strategy, duration, customerName, receipt
+            );
+
+            notificationService.sendBookingConfirmation(customerName,
+                    vehicle.getPlateNumber(), total);
+            notificationService.sendPaymentConfirmation(customerName, receipt.getTransactionId());
+
+            return invoice;
+
+        } catch (Exception e) {
+
+            if (reserved) {
+                try { inventoryService.releaseVehicle(vehicle.getId()); }
+                catch (Exception ignored) {}
+            }
+
+            throw e;
+        }
     }
 }
