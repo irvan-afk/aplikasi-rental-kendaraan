@@ -29,12 +29,12 @@ public class RentalProcessGui extends JDialog {
 
     private double calculatedPrice = 0;
 
-    public RentalProcessGui(Frame owner, Vehicle vehicle, String customerName) {
+    public RentalProcessGui(Frame owner, Vehicle vehicle, String customerName, RentalServiceFacade facade) {
         super(owner, "Proses Rental - " + vehicle.getPlateNumber(), true);
 
         this.selectedVehicle = vehicle;
         this.customerName = customerName;
-        this.facade = new RentalServiceFacade(new VehicleDAO());
+        this.facade = facade;
 
         initComponents();
         setSize(500, 600);
@@ -220,31 +220,47 @@ public class RentalProcessGui extends JDialog {
 
         if (confirm != JOptionPane.YES_OPTION) return;
 
-        try {
-            int duration = Integer.parseInt(durationField.getText().trim());
-            PricingStrategy strategy = getSelectedStrategy();
-            PaymentService.PaymentMethod method = (PaymentService.PaymentMethod) paymentMethodCombo.getSelectedItem();
+        processButton.setEnabled(false);
+        calculateButton.setEnabled(false);
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
 
-            Invoice invoice = facade.processCompleteBooking(
-                    selectedVehicle,
-                    strategy,
-                    duration,
-                    customerName,
-                    method
-            );
+        SwingWorker<Invoice, Void> worker = new SwingWorker<>() {
+            @Override
+            protected Invoice doInBackground() throws Exception {
+                int duration = Integer.parseInt(durationField.getText().trim());
+                PricingStrategy strategy = getSelectedStrategy();
+                PaymentService.PaymentMethod method = (PaymentService.PaymentMethod) paymentMethodCombo.getSelectedItem();
 
-            showInvoiceGUI(invoice);
+                return facade.processCompleteBooking(
+                        selectedVehicle,
+                        strategy,
+                        duration,
+                        customerName,
+                        method
+                );
+            }
 
-            JOptionPane.showMessageDialog(this, "Rental berhasil diproses!",
-                    "Sukses", JOptionPane.INFORMATION_MESSAGE);
+            @Override
+            protected void done() {
+                try {
+                    Invoice invoice = get();
+                    showInvoiceGUI(invoice);
+                    JOptionPane.showMessageDialog(RentalProcessGui.this, "Rental berhasil diproses!",
+                            "Sukses", JOptionPane.INFORMATION_MESSAGE);
+                    dispose();
+                } catch (Exception e) {
+                    JOptionPane.showMessageDialog(RentalProcessGui.this, "Gagal memproses rental:\n" + e.getCause().getMessage(),
+                            "Error", JOptionPane.ERROR_MESSAGE);
+                    e.printStackTrace();
+                } finally {
+                    processButton.setEnabled(true);
+                    calculateButton.setEnabled(true);
+                    setCursor(Cursor.getDefaultCursor());
+                }
+            }
+        };
 
-            dispose();
-
-        } catch (Exception e) {
-            JOptionPane.showMessageDialog(this, "Gagal memproses rental:\n" + e.getMessage(),
-                    "Error", JOptionPane.ERROR_MESSAGE);
-            e.printStackTrace();
-        }
+        worker.execute();
     }
 
     private void showInvoiceGUI(Invoice invoice) {

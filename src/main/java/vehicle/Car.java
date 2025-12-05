@@ -2,9 +2,6 @@ package vehicle;
 
 public class Car extends Vehicle {
 
-    // Di sini Anda bisa menambahkan atribut khusus untuk mobil, contoh:
-    // private int numberOfDoors;
-
     public Car(String plateNumber, String brand, String model, double basePrice) {
         super(plateNumber, "Car", brand, model, basePrice);
     }

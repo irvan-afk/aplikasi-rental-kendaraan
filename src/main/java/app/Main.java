@@ -5,7 +5,7 @@ import javax.swing.SwingUtilities;
 import javax.swing.UIManager;
 
 import gui.AdminAppGui;
-import gui.CustomerAppGui;
+import gui.CustomerDashboardGui;
 import gui.LoginGui;
 
 public class Main {
@@ -34,13 +34,14 @@ public class Main {
 
             // 3. CEK HASIL LOGIN (SETELAH DIALOG DITUTUP)
             String role = loginGui.getAuthenticatedRole();
+            String username = loginGui.getAuthenticatedUsername();
 
             if (role != null) {
                 // Jika login berhasil (role tidak null), buka GUI yang sesuai
                 if (role.equalsIgnoreCase("ADMIN")) {
                     new AdminAppGui().setVisible(true);
                 } else if (role.equalsIgnoreCase("CUSTOMER")) {
-                    new CustomerAppGui().setVisible(true);
+                    new CustomerDashboardGui(username).setVisible(true);
                 }
             } else {
                 // Jika user menutup login tanpa berhasil masuk (klik silang/cancel)

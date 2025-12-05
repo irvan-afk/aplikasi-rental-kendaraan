@@ -1,13 +1,22 @@
 package rental;
 
+import dao.CustomerDAO;
+import dao.RentalDAO;
 import dao.VehicleDAO;
 import pricing.PricingStrategy;
 import rental.exception.RentalException;
 import vehicle.Vehicle;
 
+import java.sql.SQLException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
 public class RentalServiceFacade {
 
     private final VehicleDAO vehicleDAO;
+    private final RentalDAO rentalDAO;
+    private final CustomerDAO customerDAO;
     private final InventoryService inventoryService;
     private final PaymentService paymentService;
     private final InvoiceService invoiceService;
@@ -15,6 +24,8 @@ public class RentalServiceFacade {
 
     public RentalServiceFacade(VehicleDAO vehicleDAO) {
         this.vehicleDAO = vehicleDAO;
+        this.rentalDAO = new RentalDAO();
+        this.customerDAO = new CustomerDAO();
         this.inventoryService = new InventoryService(vehicleDAO);
         this.paymentService = new PaymentService();
         this.invoiceService = new InvoiceService();
@@ -25,22 +36,14 @@ public class RentalServiceFacade {
         return strategy.calculatePrice(v.getBasePrice(), duration);
     }
 
-    public void bookVehicle(Vehicle v, PricingStrategy strategy, int duration) throws Exception {
-        double total = calculateEstPrice(v, strategy, duration);
+    public List<Rental> getRentalsForCustomer(String customerName) throws SQLException {
+        return rentalDAO.findRentalsByUsername(customerName);
+    }
 
-        Vehicle current = vehicleDAO.findById(v.getId());
-        if (current == null) {
-            throw new Exception("Kendaraan tidak ditemukan!");
-        }
-
-        if (!current.isAvailable()) {
-            throw new Exception("Maaf, kendaraan ini baru saja disewa orang lain!");
-        }
-
-        vehicleDAO.updateAvailability(v.getId(), false);
-
-        System.out.println("Booking berhasil untuk kendaraan " + v.getPlateNumber()
-                + " | Harga total: " + total);
+    public void returnVehicle(int rentalId) throws Exception {
+        int vehicleId = rentalDAO.findVehicleIdByRentalId(rentalId);
+        inventoryService.releaseVehicle(vehicleId);
+        // Here you could also add logic to mark the rental record as 'completed' if you add a status column to the rentals table.
     }
 
     public Invoice processCompleteBooking(
@@ -65,14 +68,31 @@ public class RentalServiceFacade {
                 throw new RentalException(RentalException.ErrorCode.VEHICLE_NOT_AVAILABLE);
             }
 
+            // 1. Reserve vehicle first
             inventoryService.reserveVehicle(vehicle.getId());
             reserved = true;
 
+            // 2. Calculate price
             double total = strategy.calculatePrice(vehicle.getBasePrice(), duration);
 
+            // 3. Process payment
             PaymentService.PaymentReceipt receipt =
                     paymentService.processPayment(total, method, customerName);
 
+            // 4. Persist the rental record to the database
+            int customerId = customerDAO.findCustomerIdByUsername(customerName);
+            Date startDate = new Date();
+            Calendar cal = Calendar.getInstance();
+            cal.setTime(startDate);
+            // This is a simplification. The duration unit (days, hours) should be handled properly.
+            // For now, we assume duration is in days as per the old schema.
+            cal.add(Calendar.DATE, duration);
+            Date endDate = cal.getTime();
+
+            Rental rental = new Rental(vehicle.getId(), customerId, startDate, endDate, total);
+            rentalDAO.save(rental);
+
+            // 5. Generate invoice and send notifications
             Invoice invoice = invoiceService.generateInvoice(
                     vehicle, strategy, duration, customerName, receipt
             );
@@ -86,7 +106,9 @@ public class RentalServiceFacade {
         } catch (Exception e) {
 
             if (reserved) {
-                try { inventoryService.releaseVehicle(vehicle.getId()); }
+                try {
+                    inventoryService.releaseVehicle(vehicle.getId());
+                }
                 catch (Exception ignored) {}
             }
 

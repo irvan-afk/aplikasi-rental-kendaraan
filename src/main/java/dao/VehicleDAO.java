@@ -109,6 +109,20 @@ public class VehicleDAO {
         }
     }
 
+    public int countByAvailability(boolean isAvailable) throws SQLException {
+        String sql = "SELECT COUNT(*) FROM vehicles WHERE available = ?";
+        try (Connection conn = ConnectionManager.getDataSource().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setBoolean(1, isAvailable);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt(1);
+                }
+            }
+        }
+        return 0;
+    }
+
     private Vehicle mapRow(ResultSet rs) throws SQLException {
         int id = rs.getInt("id");
         String plate = rs.getString("plate");

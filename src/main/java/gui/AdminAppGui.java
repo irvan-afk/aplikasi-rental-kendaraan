@@ -2,6 +2,7 @@ package gui;
 
 import java.awt.BorderLayout;
 import java.awt.Color;
+import java.awt.Cursor;
 import java.awt.Dimension;
 import java.awt.FlowLayout;
 import java.awt.Font;
@@ -20,6 +21,7 @@ import javax.swing.JTable;
 import javax.swing.JTextField;
 import javax.swing.ListSelectionModel;
 import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
 import javax.swing.border.EmptyBorder;
 import javax.swing.table.DefaultTableModel;
 import javax.swing.table.JTableHeader;
@@ -31,6 +33,8 @@ import vehicle.Vehicle;
 import vehicle.factory.CarFactory;
 import vehicle.factory.MotorcycleFactory;
 import vehicle.factory.TruckFactory;
+import java.util.concurrent.ExecutionException;
+
 
 public class AdminAppGui extends JFrame {
 
@@ -39,6 +43,8 @@ public class AdminAppGui extends JFrame {
     private transient AdminService adminService;
     private JTable vehicleTable;
     private DefaultTableModel tableModel;
+    private JLabel rentedLabel;
+    private JLabel availableLabel;
 
     public AdminAppGui() {
         // Init service & DAO
@@ -46,7 +52,7 @@ public class AdminAppGui extends JFrame {
         adminService = new AdminService(dao);
 
         setTitle("Sistem Rental - Administrator Mode");
-        setSize(900, 600); // Lebar ditambah agar tabel muat
+        setSize(900, 700); // Perbesar tinggi untuk dashboard
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -71,13 +77,15 @@ public class AdminAppGui extends JFrame {
         JButton viewButton = createStyledButton("Refresh Data", new Color(100, 100, 100));
         JButton rentButton = createStyledButton("Tambah Baru", new Color(50, 150, 50)); // Hijau
         JButton updateButton = createStyledButton("Edit Data", new Color(200, 140, 0)); // Oranye
-        JButton returnButton = createStyledButton("Hapus Data", new Color(200, 50, 50)); // Merah
+        JButton deleteButton = createStyledButton("Hapus Data", new Color(200, 50, 50)); // Merah
+        JButton rentalInfoButton = createStyledButton("Data Rental Aktif", new Color(0, 120, 150)); // Biru Cyan
         JButton logoutButton = createStyledButton("Logout", new Color(50, 100, 150)); // Biru   
 
         navPanel.add(viewButton);
         navPanel.add(rentButton);
         navPanel.add(updateButton);
-        navPanel.add(returnButton);
+        navPanel.add(deleteButton);
+        navPanel.add(rentalInfoButton);
         navPanel.add(logoutButton); 
 
         // Gabungkan Header Title dan Navigasi di bagian ATAS (NORTH)
@@ -86,35 +94,15 @@ public class AdminAppGui extends JFrame {
         topContainer.add(navPanel, BorderLayout.SOUTH);
         add(topContainer, BorderLayout.NORTH);
 
-        // 3. TABLE AREA (CENTER) - PENGGANTI TEXT AREA
-        // Nama Kolom Tabel
-        String[] columnNames = {"ID", "Plat Nomor", "Tipe", "Merk", "Model", "Harga Dasar", "Status"};
+        // 3. TABLE AREA (CENTER)
+        JScrollPane scrollPane = createTablePanel();
         
-        // Model tabel (non-editable cell)
-        tableModel = new DefaultTableModel(columnNames, 0) {
-            @Override
-            public boolean isCellEditable(int row, int column) {
-                return false; // Agar sel tidak bisa diedit langsung (harus via tombol edit)
-            }
-        };
-
-        vehicleTable = new JTable(tableModel);
-        vehicleTable.setFillsViewportHeight(true);
-        vehicleTable.setRowHeight(25); // Tinggi baris agar tidak rapat
-        vehicleTable.setFont(new Font(FONT_NAME, Font.PLAIN, 14));
-        vehicleTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION); // Hanya bisa pilih 1 baris
-
-        // Styling Header Tabel
-        JTableHeader header = vehicleTable.getTableHeader();
-        header.setFont(new Font(FONT_NAME, Font.BOLD, 14));
-        header.setBackground(new Color(220, 220, 220));
-        header.setForeground(Color.BLACK);
-
-        JScrollPane scrollPane = new JScrollPane(vehicleTable);
-        scrollPane.setBorder(BorderFactory.createTitledBorder("Daftar Inventaris Kendaraan"));
+        // 4. DASHBOARD PANEL
+        JPanel dashboardPanel = createDashboardPanel();
         
-        JPanel centerPanel = new JPanel(new BorderLayout());
-        centerPanel.setBorder(new EmptyBorder(10, 20, 10, 20)); // Margin kiri-kanan
+        JPanel centerPanel = new JPanel(new BorderLayout(10, 10));
+        centerPanel.setBorder(new EmptyBorder(10, 20, 10, 20)); // Margin
+        centerPanel.add(dashboardPanel, BorderLayout.NORTH);
         centerPanel.add(scrollPane, BorderLayout.CENTER);
         
         add(centerPanel, BorderLayout.CENTER);
@@ -125,14 +113,86 @@ public class AdminAppGui extends JFrame {
         // ===== EVENT HANDLERS =====
         viewButton.addActionListener(e -> viewVehicles());
         rentButton.addActionListener(e -> addVehicleDialog());
-        returnButton.addActionListener(e -> deleteVehicleDialog());
+        deleteButton.addActionListener(e -> deleteVehicleDialog());
         updateButton.addActionListener(e -> updateVehicleDialog());
+        rentalInfoButton.addActionListener(e -> new RentalInfoGui(this, adminService).setVisible(true));
         logoutButton.addActionListener(e -> {
             this.dispose();
             Main.showLoginWorkflow();
         });
     }
 
+    private JScrollPane createTablePanel() {
+        String[] columnNames = {"ID", "Plat Nomor", "Tipe", "Merk", "Model", "Harga Dasar", "Status"};
+        tableModel = new DefaultTableModel(columnNames, 0) {
+            @Override
+            public boolean isCellEditable(int row, int column) {
+                return false;
+            }
+        };
+        vehicleTable = new JTable(tableModel);
+        vehicleTable.setFillsViewportHeight(true);
+        vehicleTable.setRowHeight(25);
+        vehicleTable.setFont(new Font(FONT_NAME, Font.PLAIN, 14));
+        vehicleTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
+
+        JTableHeader header = vehicleTable.getTableHeader();
+        header.setFont(new Font(FONT_NAME, Font.BOLD, 14));
+        header.setBackground(new Color(220, 220, 220));
+        header.setForeground(Color.BLACK);
+
+        JScrollPane scrollPane = new JScrollPane(vehicleTable);
+        scrollPane.setBorder(BorderFactory.createTitledBorder("Daftar Inventaris Kendaraan"));
+        return scrollPane;
+    }
+
+    private JPanel createDashboardPanel() {
+        JPanel panel = new JPanel(new GridLayout(1, 2, 20, 0));
+        panel.setBorder(BorderFactory.createTitledBorder("Ringkasan Status"));
+        panel.setPreferredSize(new Dimension(0, 80));
+
+        rentedLabel = new JLabel("Disewa: -", SwingConstants.CENTER);
+        rentedLabel.setFont(new Font(FONT_NAME, Font.BOLD, 16));
+        rentedLabel.setForeground(new Color(200, 50, 50));
+
+        availableLabel = new JLabel("Tersedia: -", SwingConstants.CENTER);
+        availableLabel.setFont(new Font(FONT_NAME, Font.BOLD, 16));
+        availableLabel.setForeground(new Color(50, 150, 50));
+        
+        panel.add(rentedLabel);
+        panel.add(availableLabel);
+
+        return panel;
+    }
+
+    private void refreshDashboard() {
+        rentedLabel.setText("Disewa: ...");
+        availableLabel.setText("Tersedia: ...");
+
+        SwingWorker<int[], Void> worker = new SwingWorker<>() {
+            @Override
+            protected int[] doInBackground() throws Exception {
+                int rented = adminService.getNumberOfVehiclesRented();
+                int available = adminService.getNumberOfVehiclesAvailable();
+                return new int[]{rented, available};
+            }
+
+            @Override
+            protected void done() {
+                try {
+                    int[] counts = get();
+                    rentedLabel.setText("Disewa: " + counts[0]);
+                    availableLabel.setText("Tersedia: " + counts[1]);
+                } catch (InterruptedException | ExecutionException e) {
+                    rentedLabel.setText("Disewa: Error");
+                    availableLabel.setText("Tersedia: Error");
+                    e.printStackTrace();
+                }
+            }
+        };
+        worker.execute();
+    }
+    
     // Helper untuk styling tombol
     private JButton createStyledButton(String text, Color bg) {
         JButton btn = new JButton(text);
@@ -147,28 +207,42 @@ public class AdminAppGui extends JFrame {
     // --- LOGIC METHOD ---
 
     private void viewVehicles() {
-        try {
-            // Bersihkan data lama di tabel
-            tableModel.setRowCount(0);
+        refreshDashboard(); // Refresh dashboard data
+        
+        setCursor(Cursor.getPredefinedCursor(Cursor.WAIT_CURSOR));
+        tableModel.setRowCount(0);
 
-            List<Vehicle> list = adminService.listVehicles();
-            for (Vehicle v : list) {
-                String status = v.isAvailable() ? "Tersedia" : "Disewa";
-                // Masukkan data baris per baris
-                Object[] rowData = {
-                    v.getId(),
-                    v.getPlateNumber(),
-                    v.getType(),
-                    v.getBrand(),
-                    v.getModel(),
-                    String.format("Rp %,.0f", v.getBasePrice()), // Format Rupiah
-                    status
-                };
-                tableModel.addRow(rowData);
+        SwingWorker<List<Vehicle>, Void> worker = new SwingWorker<>() {
+            @Override
+            protected List<Vehicle> doInBackground() throws Exception {
+                return adminService.listVehicles();
             }
-        } catch (Exception ex) {
-            JOptionPane.showMessageDialog(this, "Gagal memuat data: " + ex.getMessage());
-        }
+
+            @Override
+            protected void done() {
+                try {
+                    List<Vehicle> list = get();
+                    for (Vehicle v : list) {
+                        String status = v.isAvailable() ? "Tersedia" : "Disewa";
+                        Object[] rowData = {
+                            v.getId(),
+                            v.getPlateNumber(),
+                            v.getType(),
+                            v.getBrand(),
+                            v.getModel(),
+                            String.format("Rp %,.0f", v.getBasePrice()), // Format Rupiah
+                            status
+                        };
+                        tableModel.addRow(rowData);
+                    }
+                } catch (Exception ex) {
+                    JOptionPane.showMessageDialog(AdminAppGui.this, "Gagal memuat data: " + ex.getMessage());
+                } finally {
+                    setCursor(Cursor.getDefaultCursor());
+                }
+            }
+        };
+        worker.execute();
     }
 
     private void addVehicleDialog() {

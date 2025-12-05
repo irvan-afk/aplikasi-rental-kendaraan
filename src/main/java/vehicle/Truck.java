@@ -2,9 +2,6 @@ package vehicle;
 
 public class Truck extends Vehicle {
 
-    // Di sini Anda bisa menambahkan atribut khusus untuk truk, contoh:
-    // private double cargoCapacity;
-
     public Truck(String plateNumber, String brand, String model, double basePrice) {
         super(plateNumber, "Truck", brand, model, basePrice);
     }
