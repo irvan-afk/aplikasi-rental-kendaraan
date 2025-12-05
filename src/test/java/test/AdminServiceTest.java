@@ -27,7 +27,7 @@ class AdminServiceTest {
 
     private AdminService adminService;
     private VehicleDAO vehicleDAO;
-    private Vehicle tempVehicle; // Untuk menyimpan kendaraan yang dibuat selama test
+    private Vehicle tempVehicle;
 
     @BeforeEach
     void setUp() {

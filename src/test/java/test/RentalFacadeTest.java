@@ -14,13 +14,11 @@ import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import dao.VehicleDAO;
-import dao.RentalDAO; // Pastikan import ini ada
 import pricing.DailyPricing;
 import pricing.PricingStrategy;
 import rental.Invoice;
 import rental.RentalServiceFacade;
 import rental.exception.RentalException;
-import service.AdminService;
 import vehicle.Car;
 import vehicle.Vehicle;
 
@@ -28,7 +26,6 @@ class RentalFacadeTest {
 
     private RentalServiceFacade facade;
     private VehicleDAO vehicleDAO;
-    private transient AdminService adminService;
     private Vehicle testVehicle; 
 
     @BeforeEach

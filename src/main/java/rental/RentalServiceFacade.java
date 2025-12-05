@@ -14,7 +14,6 @@ import vehicle.Vehicle;
 
 public class RentalServiceFacade {
 
-    private final VehicleDAO vehicleDAO;
     private final RentalDAO rentalDAO;
     private final CustomerDAO customerDAO;
     private final InventoryService inventoryService;
@@ -23,7 +22,6 @@ public class RentalServiceFacade {
     private final NotificationService notificationService;
 
     public RentalServiceFacade(VehicleDAO vehicleDAO) {
-        this.vehicleDAO = vehicleDAO;
         this.rentalDAO = new RentalDAO();
         this.customerDAO = new CustomerDAO();
         this.inventoryService = new InventoryService(vehicleDAO);

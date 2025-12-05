@@ -78,11 +78,40 @@ public class VehicleDAO {
     }
 
     public void deleteById(int id) throws SQLException {
-        String sql = "DELETE FROM vehicles WHERE id = ?";
-        try (Connection conn = ConnectionManager.getDataSource().getConnection();
-             PreparedStatement ps = conn.prepareStatement(sql)) {
-            ps.setInt(1, id);
-            ps.executeUpdate();
+        Connection conn = null;
+        PreparedStatement stmtRental = null;
+        PreparedStatement stmtVehicle = null;
+
+        try {
+            conn = ConnectionManager.getDataSource().getConnection(); 
+            conn.setAutoCommit(false); // PENTING: Pakai Transaksi agar aman
+
+            // LANGKAH 1: Hapus data di tabel Anak (Rentals) dulu
+            // Ini solusi untuk error "foreign key constraint"
+            String sqlDeleteRentals = "DELETE FROM rentals WHERE vehicle_id = ?";
+            stmtRental = conn.prepareStatement(sqlDeleteRentals);
+            stmtRental.setInt(1, id);
+            stmtRental.executeUpdate();
+
+            // LANGKAH 2: Hapus data di tabel Induk (Vehicles)
+            // Hapus bagian ", status = ..." jika Anda sempat menambahkannya
+            String sqlDeleteVehicle = "DELETE FROM vehicles WHERE id = ?";
+            stmtVehicle = conn.prepareStatement(sqlDeleteVehicle);
+            stmtVehicle.setInt(1, id);
+            stmtVehicle.executeUpdate();
+
+            conn.commit(); // Simpan perubahan
+        } catch (SQLException e) {
+            if (conn != null) conn.rollback(); // Batalkan jika ada error
+            throw e;
+        } finally {
+            // Tutup resource
+            if (stmtRental != null) stmtRental.close();
+            if (stmtVehicle != null) stmtVehicle.close();
+            if (conn != null) {
+                conn.setAutoCommit(true);
+                conn.close();
+            }
         }
     }
 
