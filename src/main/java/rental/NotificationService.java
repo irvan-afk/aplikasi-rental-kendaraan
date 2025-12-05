@@ -1,15 +1,21 @@
 package rental;
 
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Collections;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 public class NotificationService {
     
+    // FIX 2: Gunakan Logger pengganti System.out
+    private static final Logger LOGGER = Logger.getLogger(NotificationService.class.getName());
+    
     private final List<Notification> notifications = new ArrayList<>();
-    private static final SimpleDateFormat DATE_FORMAT = 
-        new SimpleDateFormat("dd/MM/yyyy HH:mm");
     
     public enum NotificationType {
         SUCCESS("Success"),
@@ -34,7 +40,7 @@ public class NotificationService {
             double totalPrice
     ) {
         String message = String.format(
-            "Halo %s! Booking kendaraan %s berhasil. Total: Rp %.2f",
+            "Halo %s! Booking kendaraan %s berhasil. Total: Rp %,.2f",
             customerName, vehiclePlate, totalPrice
         );
         sendNotification(NotificationType.SUCCESS, message);
@@ -67,11 +73,20 @@ public class NotificationService {
         );
         notifications.add(notification);
         
-        System.out.println("[" + type.getDisplayName() + "] " + message);
+        // FIX 2: Log menggunakan Logger dengan Level yang sesuai
+        Level level = Level.INFO;
+        if (type == NotificationType.ERROR) {
+            level = Level.SEVERE;
+        } else if (type == NotificationType.WARNING) {
+            level = Level.WARNING;
+        }
+        
+        LOGGER.log(level, "[{0}] {1}", new Object[]{type.getDisplayName(), message});
     }
     
     public List<Notification> getAllNotifications() {
-        return new ArrayList<>(notifications);
+        // Return unmodifiable list agar data internal aman
+        return Collections.unmodifiableList(new ArrayList<>(notifications));
     }
     
     public void clearNotifications() {
@@ -79,6 +94,9 @@ public class NotificationService {
     }
 
     public static class Notification {
+        // FIX 1: Gunakan DateTimeFormatter (Thread-Safe)
+        private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm");
+        
         private final NotificationType type;
         private final String message;
         private final long timestamp;
@@ -102,7 +120,9 @@ public class NotificationService {
         }
         
         public String getFormattedTimestamp() {
-            return DATE_FORMAT.format(new Date(timestamp));
+            // FIX 1: Konversi timestamp (long) ke LocalDateTime untuk diformat
+            return LocalDateTime.ofInstant(Instant.ofEpochMilli(timestamp), ZoneId.systemDefault())
+                    .format(FORMATTER);
         }
         
         @Override

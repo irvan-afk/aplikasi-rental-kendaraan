@@ -1,19 +1,42 @@
 package gui;
 
-import rental.Rental;
-import service.AdminService;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Cursor;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Frame;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
+import javax.swing.table.DefaultTableModel;
+
+import rental.Rental;
+import service.AdminService;
 
 public class RentalInfoGui extends JDialog {
 
-    private final AdminService adminService;
-    private JTable rentalTable;
+    private static final long serialVersionUID = 1L;
+    private static final String FONT_SANS_SERIF = "SansSerif";
+    private static final Logger LOGGER = Logger.getLogger(RentalInfoGui.class.getName());
+
+    private final transient AdminService adminService;
+    
+    // HAPUS: private JTable rentalTable; (Tidak perlu jadi field)
+    
+    // TETAP: tableModel harus tetap field agar bisa diakses di loadActiveRentals
     private DefaultTableModel tableModel;
 
     public RentalInfoGui(Frame owner, AdminService adminService) {
@@ -32,22 +55,29 @@ public class RentalInfoGui extends JDialog {
 
         // Header
         JLabel titleLabel = new JLabel("Kendaraan yang Sedang Dirental", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
+        titleLabel.setFont(new Font(FONT_SANS_SERIF, Font.BOLD, 18));
         titleLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         add(titleLabel, BorderLayout.NORTH);
 
-        // Table
+        // Table Model Setup
         String[] columnNames = {"Plat Nomor", "Merk", "Model", "Dirental Oleh", "Tgl Mulai", "Tgl Selesai", "Total Biaya"};
+        
         tableModel = new DefaultTableModel(columnNames, 0) {
+            private static final long serialVersionUID = 1L;
+
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
-        rentalTable = new JTable(tableModel);
+        
+        // PERBAIKAN DISINI: Jadikan JTable sebagai LOCAL VARIABLE
+        // Cukup tambahkan 'JTable' di depan nama variabelnya
+        JTable rentalTable = new JTable(tableModel);
+        
         rentalTable.setFillsViewportHeight(true);
         rentalTable.setRowHeight(25);
-        rentalTable.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        rentalTable.setFont(new Font(FONT_SANS_SERIF, Font.PLAIN, 14));
 
         JScrollPane scrollPane = new JScrollPane(rentalTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -100,11 +130,12 @@ public class RentalInfoGui extends JDialog {
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
+                    LOGGER.log(Level.WARNING, "Load rentals interrupted", e);
                     JOptionPane.showMessageDialog(RentalInfoGui.this,
                             "Proses memuat data dibatalkan.",
                             "Dibatalkan", JOptionPane.WARNING_MESSAGE);
                 } catch (ExecutionException e) {
-                    e.printStackTrace();
+                    LOGGER.log(Level.SEVERE, "Error loading active rentals", e);
                     JOptionPane.showMessageDialog(RentalInfoGui.this,
                             "Gagal memuat data rental: " + e.getCause().getMessage(),
                             "Error", JOptionPane.ERROR_MESSAGE);

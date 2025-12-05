@@ -23,7 +23,7 @@ public class Main {
                 }
             }
         } catch (Exception e) {
-            
+            // Jika Nimbus tidak tersedia, tetap gunakan tema default
         }
 
         try {
@@ -42,7 +42,7 @@ public class Main {
                     new CustomerDashboardGui(username).setVisible(true);
                 }
             } else {
-                
+                // Login gagal atau dibatalkan
             }
 
         } catch (Exception e) {
