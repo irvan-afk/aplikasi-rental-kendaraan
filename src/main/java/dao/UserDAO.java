@@ -8,7 +8,7 @@ import java.sql.SQLException;
 import db.ConnectionManager;
 
 public class UserDAO {
-    // Returns {role, username} on success, null on failure
+
     public String[] authenticate(String username, String password) throws SQLException {
         String sql = "SELECT role, username FROM users WHERE username = ? AND password = ?";
         try (Connection conn = ConnectionManager.getDataSource().getConnection();
@@ -25,7 +25,7 @@ public class UserDAO {
     }
 
     public boolean registerUser(String username, String password) throws SQLException {
-        // Default role for new users is CUSTOMER
+        
         String sql = "INSERT INTO users (username, password, role) VALUES (?, ?, 'CUSTOMER')";
         
         try (Connection conn = ConnectionManager.getDataSource().getConnection();

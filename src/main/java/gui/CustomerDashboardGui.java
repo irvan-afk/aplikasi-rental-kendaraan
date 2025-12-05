@@ -15,13 +15,14 @@ import java.util.concurrent.ExecutionException;
 
 public class CustomerDashboardGui extends JFrame {
 
+    private static final String FONT_NAME = "SansSerif";
     private final String customerName;
-    private JTable vehicleTable;
-    private DefaultTableModel tableModel;
-    private VehicleDAO vehicleDAO;
-    private RentalServiceFacade facade;
-    private List<Vehicle> currentVehicleList;
-    private JButton rentButton;
+    private transient JTable vehicleTable;
+    private transient DefaultTableModel tableModel;
+    private transient VehicleDAO vehicleDAO;
+    private transient RentalServiceFacade facade;
+    private transient List<Vehicle> currentVehicleList;
+    private transient JButton rentButton;
 
     public CustomerDashboardGui(String customerName) {
         this.customerName = customerName;
@@ -29,8 +30,8 @@ public class CustomerDashboardGui extends JFrame {
         this.facade = new RentalServiceFacade(this.vehicleDAO);
 
         setTitle("Selamat Datang, " + customerName + "!");
-        setSize(900, 600);
-        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+        setSize(1100, 600);
+        setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
         initComponents();
@@ -44,7 +45,7 @@ public class CustomerDashboardGui extends JFrame {
         JPanel headerPanel = new JPanel(new BorderLayout());
         headerPanel.setBackground(new Color(50, 100, 150));
         JLabel titleLabel = new JLabel("Daftar Kendaraan Tersedia", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 22));
+        titleLabel.setFont(new Font(FONT_NAME, Font.BOLD, 22));
         titleLabel.setForeground(Color.WHITE);
         titleLabel.setBorder(new EmptyBorder(20, 0, 20, 0));
         headerPanel.add(titleLabel, BorderLayout.CENTER);
@@ -78,11 +79,11 @@ public class CustomerDashboardGui extends JFrame {
         vehicleTable = new JTable(tableModel);
         vehicleTable.setFillsViewportHeight(true);
         vehicleTable.setRowHeight(25);
-        vehicleTable.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        vehicleTable.setFont(new Font(FONT_NAME, Font.PLAIN, 14));
         vehicleTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
 
         JTableHeader tableHeader = vehicleTable.getTableHeader();
-        tableHeader.setFont(new Font("SansSerif", Font.BOLD, 14));
+        tableHeader.setFont(new Font(FONT_NAME, Font.BOLD, 14));
         
         JScrollPane scrollPane = new JScrollPane(vehicleTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 20, 10, 20));
@@ -98,9 +99,9 @@ public class CustomerDashboardGui extends JFrame {
             Main.showLoginWorkflow();
         });
 
-        myRentalsButton.addActionListener(e -> {
-            new MyRentalsGui(this, customerName, facade).setVisible(true);
-        });
+        myRentalsButton.addActionListener(e -> 
+            new MyRentalsGui(this, customerName, facade).setVisible(true)
+        );
 
         rentButton.addActionListener(e -> {
             int selectedRow = vehicleTable.getSelectedRow();
@@ -139,7 +140,12 @@ public class CustomerDashboardGui extends JFrame {
                         };
                         tableModel.addRow(rowData);
                     }
-                } catch (InterruptedException | ExecutionException e) {
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    JOptionPane.showMessageDialog(CustomerDashboardGui.this,
+                            "Proses memuat data dibatalkan.",
+                            "Dibatalkan", JOptionPane.WARNING_MESSAGE);
+                } catch (ExecutionException e) {
                     e.printStackTrace();
                     JOptionPane.showMessageDialog(CustomerDashboardGui.this,
                             "Gagal memuat data kendaraan: " + e.getCause().getMessage(),
@@ -156,7 +162,7 @@ public class CustomerDashboardGui extends JFrame {
         JButton btn = new JButton(text);
         btn.setBackground(bg);
         btn.setForeground(Color.WHITE);
-        btn.setFont(new Font("SansSerif", Font.BOLD, 12));
+        btn.setFont(new Font(FONT_NAME, Font.BOLD, 12));
         btn.setFocusPainted(false);
         btn.setPreferredSize(new Dimension(140, 35));
         return btn;

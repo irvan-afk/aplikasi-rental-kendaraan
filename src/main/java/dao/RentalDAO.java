@@ -14,7 +14,6 @@ public class RentalDAO {
         try (Connection conn = ConnectionManager.getDataSource().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
 
-            // Calculate duration_days, assuming dates are not null
             long diff = rental.getEndDate().getTime() - rental.getStartDate().getTime();
             int durationDays = (int) (diff / (1000 * 60 * 60 * 24));
 
@@ -80,8 +79,6 @@ public class RentalDAO {
 
     public List<Rental> findAllActiveRentals() throws SQLException {
         List<Rental> rentals = new ArrayList<>();
-        // This query joins rentals with vehicles and customers
-        // and selects the most recent rental for each vehicle that is currently NOT available.
         String sql = "SELECT r.*, v.brand, v.model, v.plate, v.available, c.name as customer_name " +
                      "FROM rentals r " +
                      "JOIN ( " +

@@ -1,6 +1,5 @@
 package gui;
 
-import dao.VehicleDAO;
 import rental.Invoice;
 import pricing.DailyPricing;
 import pricing.HourlyPricing;
@@ -22,7 +21,6 @@ public class RentalProcessGui extends JDialog {
     private JComboBox<String> durationTypeCombo;
     private JTextField durationField;
     private JLabel priceLabel;
-    private JComboBox<PaymentService.PaymentMethod> paymentMethodCombo;
     private JTextArea summaryArea;
     private JButton calculateButton;
     private JButton processButton;
@@ -104,12 +102,8 @@ public class RentalProcessGui extends JDialog {
     }
 
     private JPanel createPaymentPanel() {
-        JPanel panel = new JPanel(new GridLayout(2, 2, 5, 5));
+        JPanel panel = new JPanel(new GridLayout(1, 2, 5, 5));
         panel.setBorder(BorderFactory.createTitledBorder("Pembayaran"));
-
-        panel.add(new JLabel("Metode Pembayaran:"));
-        paymentMethodCombo = new JComboBox<>(PaymentService.PaymentMethod.values());
-        panel.add(paymentMethodCombo);
 
         panel.add(new JLabel("Total Harga:"));
         priceLabel = new JLabel("Rp 0");
@@ -229,14 +223,12 @@ public class RentalProcessGui extends JDialog {
             protected Invoice doInBackground() throws Exception {
                 int duration = Integer.parseInt(durationField.getText().trim());
                 PricingStrategy strategy = getSelectedStrategy();
-                PaymentService.PaymentMethod method = (PaymentService.PaymentMethod) paymentMethodCombo.getSelectedItem();
 
                 return facade.processCompleteBooking(
                         selectedVehicle,
                         strategy,
                         duration,
-                        customerName,
-                        method
+                        customerName
                 );
             }
 

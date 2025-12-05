@@ -27,7 +27,7 @@ public class MyRentalsGui extends JDialog {
         initComponents();
         loadRentals();
 
-        setSize(800, 400);
+        setSize(900, 400);
         setLocationRelativeTo(owner);
         setDefaultCloseOperation(DISPOSE_ON_CLOSE);
     }
@@ -112,7 +112,12 @@ public class MyRentalsGui extends JDialog {
                             });
                         }
                     }
-                } catch (InterruptedException | ExecutionException e) {
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    JOptionPane.showMessageDialog(MyRentalsGui.this,
+                            "Proses memuat data dibatalkan.",
+                            "Dibatalkan", JOptionPane.WARNING_MESSAGE);
+                } catch (ExecutionException e) {
                     e.printStackTrace();
                     JOptionPane.showMessageDialog(MyRentalsGui.this,
                             "Gagal memuat riwayat rental: " + e.getCause().getMessage(),
@@ -168,7 +173,12 @@ public class MyRentalsGui extends JDialog {
                             "Sukses",
                             JOptionPane.INFORMATION_MESSAGE);
                     loadRentals(); // Refresh the list
-                } catch (InterruptedException | ExecutionException e) {
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                     JOptionPane.showMessageDialog(MyRentalsGui.this,
+                            "Proses pengembalian dibatalkan.",
+                            "Dibatalkan", JOptionPane.WARNING_MESSAGE);
+                } catch (ExecutionException e) {
                     e.printStackTrace();
                     JOptionPane.showMessageDialog(MyRentalsGui.this,
                             "Gagal mengembalikan kendaraan: " + e.getCause().getMessage(),

@@ -50,8 +50,7 @@ public class RentalServiceFacade {
             Vehicle vehicle,
             PricingStrategy strategy,
             int duration,
-            String customerName,
-            PaymentService.PaymentMethod method
+            String customerName
     ) throws Exception {
 
         boolean reserved = false;
@@ -75,9 +74,9 @@ public class RentalServiceFacade {
             // 2. Calculate price
             double total = strategy.calculatePrice(vehicle.getBasePrice(), duration);
 
-            // 3. Process payment
+            // 3. Process payment with hardcoded CASH method
             PaymentService.PaymentReceipt receipt =
-                    paymentService.processPayment(total, method, customerName);
+                    paymentService.processPayment(total, PaymentService.PaymentMethod.CASH, customerName);
 
             // 4. Persist the rental record to the database
             int customerId = customerDAO.findCustomerIdByUsername(customerName);
