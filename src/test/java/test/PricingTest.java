@@ -9,7 +9,7 @@ import pricing.MonthlyPricing;
 import pricing.PricingStrategy;
 import pricing.WeeklyPricing;
 
-public class PricingTest {
+class PricingTest {
 
     @Test
     void testHourlyPricing() {

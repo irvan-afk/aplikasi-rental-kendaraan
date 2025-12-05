@@ -36,8 +36,13 @@ import vehicle.Vehicle;
 
 public class RentalProcessGui extends JDialog {
 
-    private final RentalServiceFacade facade;
-    private final Vehicle selectedVehicle;
+    // FIX 2: Konstanta untuk Font agar tidak duplikat string "Arial"
+    private static final String FONT_ARIAL = "Arial";
+
+    // FIX 1: Tambahkan keyword 'transient'
+    private final transient RentalServiceFacade facade;
+    private final transient Vehicle selectedVehicle;
+    
     private final String customerName;
 
     private JComboBox<String> durationTypeCombo;
@@ -110,7 +115,7 @@ public class RentalProcessGui extends JDialog {
         panel.add(new JLabel(customerName));
 
         panel.add(new JLabel("Tipe Sewa:"));
-        String[] types = {"Per Jam", "Harian","Mingguan","Bulanan"};
+        String[] types = {"Per Jam", "Harian", "Mingguan", "Bulanan"};
         durationTypeCombo = new JComboBox<>(types);
         durationTypeCombo.addActionListener(e -> resetCalculation());
         panel.add(durationTypeCombo);
@@ -129,7 +134,8 @@ public class RentalProcessGui extends JDialog {
 
         panel.add(new JLabel("Total Harga:"));
         priceLabel = new JLabel("Rp 0");
-        priceLabel.setFont(new Font("Arial", Font.BOLD, 14));
+        // FIX 2: Gunakan konstanta FONT_ARIAL
+        priceLabel.setFont(new Font(FONT_ARIAL, Font.BOLD, 14));
         priceLabel.setForeground(new Color(0, 128, 0));
         panel.add(priceLabel);
 
@@ -172,12 +178,17 @@ public class RentalProcessGui extends JDialog {
     private PricingStrategy getSelectedStrategy() {
         String type = (String) durationTypeCombo.getSelectedItem();
         switch (type) {
-            case "Per Jam": return new HourlyPricing();
-            case "Harian": return new DailyPricing();
-            case "Mingguan": return new WeeklyPricing();
-            case "Bulanan": return new MonthlyPricing();
-            default: return new DailyPricing();
-       }
+            case "Per Jam":
+                return new HourlyPricing();
+            case "Harian":
+                return new DailyPricing();
+            case "Mingguan":
+                return new WeeklyPricing();
+            case "Bulanan":
+                return new MonthlyPricing();
+            default:
+                return new DailyPricing();
+        }
     }
 
     private void calculatePrice() {
@@ -261,6 +272,11 @@ public class RentalProcessGui extends JDialog {
                     JOptionPane.showMessageDialog(RentalProcessGui.this, "Rental berhasil diproses!",
                             "Sukses", JOptionPane.INFORMATION_MESSAGE);
                     dispose();
+                } catch (InterruptedException e) {
+                    // FIX 3: Re-interrupt thread
+                    Thread.currentThread().interrupt();
+                    JOptionPane.showMessageDialog(RentalProcessGui.this, "Proses dibatalkan.",
+                            "Error", JOptionPane.WARNING_MESSAGE);
                 } catch (Exception e) {
                     JOptionPane.showMessageDialog(RentalProcessGui.this, "Gagal memproses rental:\n" + e.getCause().getMessage(),
                             "Error", JOptionPane.ERROR_MESSAGE);
@@ -286,7 +302,8 @@ public class RentalProcessGui extends JDialog {
         main.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
 
         JLabel title = new JLabel("INVOICE RENTAL");
-        title.setFont(new Font("Arial", Font.BOLD, 20));
+        // FIX 2: Gunakan konstanta FONT_ARIAL
+        title.setFont(new Font(FONT_ARIAL, Font.BOLD, 20));
         title.setAlignmentX(Component.CENTER_ALIGNMENT);
         main.add(title);
         main.add(Box.createVerticalStrut(10));
@@ -327,8 +344,9 @@ public class RentalProcessGui extends JDialog {
         JLabel left = new JLabel(label + ": ");
         JLabel right = new JLabel(value);
 
-        left.setFont(new Font("Arial", Font.PLAIN, 14));
-        right.setFont(new Font("Arial", Font.BOLD, 14));
+        // FIX 2: Gunakan konstanta FONT_ARIAL
+        left.setFont(new Font(FONT_ARIAL, Font.PLAIN, 14));
+        right.setFont(new Font(FONT_ARIAL, Font.BOLD, 14));
 
         p.add(left, BorderLayout.WEST);
         p.add(right, BorderLayout.CENTER);
@@ -338,7 +356,8 @@ public class RentalProcessGui extends JDialog {
 
     private JLabel makeSection(String text) {
         JLabel label = new JLabel(text);
-        label.setFont(new Font("Arial", Font.BOLD, 16));
+        // FIX 2: Gunakan konstanta FONT_ARIAL
+        label.setFont(new Font(FONT_ARIAL, Font.BOLD, 16));
         label.setAlignmentX(Component.LEFT_ALIGNMENT);
         return label;
     }

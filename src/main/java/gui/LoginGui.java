@@ -18,14 +18,22 @@ import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
+import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 
 import dao.UserDAO;
 
 public class LoginGui extends JDialog {
-    private JTextField userField;
-    private JPasswordField passField;
-    private UserDAO userDAO;
+    
+    // FIX: Tambahkan serialVersionUID untuk kelas Serializable
+    private static final long serialVersionUID = 1L;
+
+    private final JTextField userField;
+    private final JPasswordField passField;
+    
+    // FIX: Gunakan transient untuk field yang tidak perlu diserialisasi (DAO)
+    private final transient UserDAO userDAO;
+    
     private String authenticatedRole = null;
     private String authenticatedUsername = null;
 
@@ -33,9 +41,9 @@ public class LoginGui extends JDialog {
         super(owner, "Login Sistem", true);
         userDAO = new UserDAO();
 
-        setSize(350, 260); // Diperbesar sedikit agar muat tombol baru
+        setSize(350, 260);
         setLocationRelativeTo(owner);
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
         // Header
@@ -69,7 +77,7 @@ public class LoginGui extends JDialog {
         // Buttons (Bottom)
         JPanel btnPanel = new JPanel(new FlowLayout(FlowLayout.CENTER, 10, 10));
         JButton loginBtn = new JButton("Login");
-        JButton registerBtn = new JButton("Daftar Baru"); // Tombol Register
+        JButton registerBtn = new JButton("Daftar Baru");
         JButton cancelBtn = new JButton("Batal");
         
         // Style buttons
@@ -81,14 +89,13 @@ public class LoginGui extends JDialog {
         cancelBtn.setPreferredSize(new Dimension(70, 30));
 
         btnPanel.add(loginBtn);
-        btnPanel.add(registerBtn); // Masukkan tombol register
+        btnPanel.add(registerBtn);
         btnPanel.add(cancelBtn);
         add(btnPanel, BorderLayout.SOUTH);
 
         // Actions
         loginBtn.addActionListener(e -> handleLogin());
         
-        // Logika Tombol Register: Buka RegisterGui
         registerBtn.addActionListener(e -> {
             RegisterGui registerGui = new RegisterGui(null);
             registerGui.setVisible(true);
@@ -96,7 +103,6 @@ public class LoginGui extends JDialog {
 
         cancelBtn.addActionListener(e -> dispose());
         
-        // Biar tekan Enter langsung login
         getRootPane().setDefaultButton(loginBtn);
     }
 

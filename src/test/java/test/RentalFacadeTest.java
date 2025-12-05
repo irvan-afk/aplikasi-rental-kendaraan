@@ -1,26 +1,23 @@
 package test;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
 import java.sql.SQLException;
 import java.util.UUID;
 
 import org.junit.jupiter.api.AfterEach;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import dao.VehicleDAO;
-import dao.RentalDAO; // Pastikan import ini ada
-import pricing.DailyPricing;
+import pricing.DailyPricing; // Pastikan import ini ada
 import pricing.PricingStrategy;
 import rental.Invoice;
 import rental.RentalServiceFacade;
 import rental.exception.RentalException;
-import service.AdminService;
 import vehicle.Car;
 import vehicle.Vehicle;
 
@@ -28,7 +25,6 @@ class RentalFacadeTest {
 
     private RentalServiceFacade facade;
     private VehicleDAO vehicleDAO;
-    private transient AdminService adminService;
     private Vehicle testVehicle; 
 
     @BeforeEach

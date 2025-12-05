@@ -1,9 +1,13 @@
 package rental;
 
+import java.util.Random;
+
 import rental.exception.RentalException;
 
 public class PaymentService {
     
+    private final Random random = new Random();
+
     public enum PaymentMethod {
         CASH("Cash"),
         CREDIT_CARD("Kartu Kredit"),
@@ -55,7 +59,7 @@ public class PaymentService {
     
     private String generateTransactionId() {
         return "TRX-" + System.currentTimeMillis() + "-" + 
-               (int)(Math.random() * 1000);
+               random.nextInt(1000);
     }
 
     public static class PaymentReceipt {
@@ -102,7 +106,7 @@ public class PaymentService {
         @Override
         public String toString() {
             return String.format(
-                "Transaction ID: %s\nAmount: Rp %.2f\nMethod: %s\nCustomer: %s",
+                "Transaction ID: %s%nAmount: Rp %.2f%nMethod: %s%nCustomer: %s",
                 transactionId, amount, method.getDisplayName(), customerName
             );
         }

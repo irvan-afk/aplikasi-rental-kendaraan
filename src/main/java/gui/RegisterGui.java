@@ -18,16 +18,22 @@ import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JPasswordField;
 import javax.swing.JTextField;
+import javax.swing.WindowConstants;
 import javax.swing.border.EmptyBorder;
 
 import dao.CustomerDAO;
 import dao.UserDAO;
 
 public class RegisterGui extends JDialog {
-    private JTextField userField;
-    private JPasswordField passField;
-    private UserDAO userDAO;
-    private CustomerDAO customerDAO;
+    
+    private static final long serialVersionUID = 1L; // Good practice for Serializable classes
+    
+    private final JTextField userField;
+    private final JPasswordField passField;
+    
+    // FIX: Menambahkan 'transient' agar tidak ikut proses serialisasi
+    private final transient UserDAO userDAO;
+    private final transient CustomerDAO customerDAO;
 
     public RegisterGui(Frame owner) {
         super(owner, "Pendaftaran Akun Baru", true);
@@ -36,7 +42,7 @@ public class RegisterGui extends JDialog {
         
         setSize(400, 300);
         setLocationRelativeTo(owner);
-        setDefaultCloseOperation(JDialog.DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
         setLayout(new BorderLayout());
 
         // 1. HEADER
