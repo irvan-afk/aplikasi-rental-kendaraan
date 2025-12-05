@@ -110,7 +110,7 @@ public class RentalProcessGui extends JDialog {
         panel.add(new JLabel(customerName));
 
         panel.add(new JLabel("Tipe Sewa:"));
-        String[] types = {"Per Jam", "Harian", "Bulanan"};
+        String[] types = {"Per Jam", "Harian","Mingguan","Bulanan"};
         durationTypeCombo = new JComboBox<>(types);
         durationTypeCombo.addActionListener(e -> resetCalculation());
         panel.add(durationTypeCombo);
@@ -174,7 +174,7 @@ public class RentalProcessGui extends JDialog {
         switch (type) {
             case "Per Jam": return new HourlyPricing();
             case "Harian": return new DailyPricing();
-            case "Mingguan": return new WeeklyPricing(); // Tambahkan ini
+            case "Mingguan": return new WeeklyPricing();
             case "Bulanan": return new MonthlyPricing();
             default: return new DailyPricing();
        }
