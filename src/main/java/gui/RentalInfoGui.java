@@ -23,7 +23,7 @@ public class RentalInfoGui extends JDialog {
         initComponents();
         loadActiveRentals();
 
-        setSize(800, 500);
+        setSize(900, 500);
         setLocationRelativeTo(owner);
     }
 
@@ -98,7 +98,12 @@ public class RentalInfoGui extends JDialog {
                             });
                         }
                     }
-                } catch (InterruptedException | ExecutionException e) {
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    JOptionPane.showMessageDialog(RentalInfoGui.this,
+                            "Proses memuat data dibatalkan.",
+                            "Dibatalkan", JOptionPane.WARNING_MESSAGE);
+                } catch (ExecutionException e) {
                     e.printStackTrace();
                     JOptionPane.showMessageDialog(RentalInfoGui.this,
                             "Gagal memuat data rental: " + e.getCause().getMessage(),

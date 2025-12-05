@@ -52,7 +52,7 @@ public class AdminAppGui extends JFrame {
         adminService = new AdminService(dao);
 
         setTitle("Sistem Rental - Administrator Mode");
-        setSize(900, 700); // Perbesar tinggi untuk dashboard
+        setSize(1100, 700); // Perbesar tinggi untuk dashboard
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
         setLocationRelativeTo(null);
 
@@ -183,7 +183,11 @@ public class AdminAppGui extends JFrame {
                     int[] counts = get();
                     rentedLabel.setText("Disewa: " + counts[0]);
                     availableLabel.setText("Tersedia: " + counts[1]);
-                } catch (InterruptedException | ExecutionException e) {
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    rentedLabel.setText("Disewa: Dibatalkan");
+                    availableLabel.setText("Tersedia: Dibatalkan");
+                } catch (ExecutionException e) {
                     rentedLabel.setText("Disewa: Error");
                     availableLabel.setText("Tersedia: Error");
                     e.printStackTrace();
@@ -235,8 +239,11 @@ public class AdminAppGui extends JFrame {
                         };
                         tableModel.addRow(rowData);
                     }
-                } catch (Exception ex) {
-                    JOptionPane.showMessageDialog(AdminAppGui.this, "Gagal memuat data: " + ex.getMessage());
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                    JOptionPane.showMessageDialog(AdminAppGui.this, "Proses memuat data dibatalkan.");
+                } catch (ExecutionException e) {
+                    JOptionPane.showMessageDialog(AdminAppGui.this, "Gagal memuat data: " + e.getCause().getMessage());
                 } finally {
                     setCursor(Cursor.getDefaultCursor());
                 }
