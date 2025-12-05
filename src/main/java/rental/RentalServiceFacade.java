@@ -1,16 +1,16 @@
 package rental;
 
+import java.sql.SQLException;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.List;
+
 import dao.CustomerDAO;
 import dao.RentalDAO;
 import dao.VehicleDAO;
 import pricing.PricingStrategy;
 import rental.exception.RentalException;
 import vehicle.Vehicle;
-
-import java.sql.SQLException;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
 
 public class RentalServiceFacade {
 
@@ -43,7 +43,6 @@ public class RentalServiceFacade {
     public void returnVehicle(int rentalId) throws Exception {
         int vehicleId = rentalDAO.findVehicleIdByRentalId(rentalId);
         inventoryService.releaseVehicle(vehicleId);
-        // Here you could also add logic to mark the rental record as 'completed' if you add a status column to the rentals table.
     }
 
     public Invoice processCompleteBooking(
@@ -67,31 +66,41 @@ public class RentalServiceFacade {
                 throw new RentalException(RentalException.ErrorCode.VEHICLE_NOT_AVAILABLE);
             }
 
-            // 1. Reserve vehicle first
             inventoryService.reserveVehicle(vehicle.getId());
             reserved = true;
 
-            // 2. Calculate price
             double total = strategy.calculatePrice(vehicle.getBasePrice(), duration);
 
-            // 3. Process payment with hardcoded CASH method
             PaymentService.PaymentReceipt receipt =
                     paymentService.processPayment(total, PaymentService.PaymentMethod.CASH, customerName);
 
-            // 4. Persist the rental record to the database
             int customerId = customerDAO.findCustomerIdByUsername(customerName);
             Date startDate = new Date();
             Calendar cal = Calendar.getInstance();
             cal.setTime(startDate);
-            // This is a simplification. The duration unit (days, hours) should be handled properly.
-            // For now, we assume duration is in days as per the old schema.
-            cal.add(Calendar.DATE, duration);
+
+            String unit = strategy.getUnitName();
+            switch (unit) {
+                case "Jam":
+                    cal.add(Calendar.HOUR_OF_DAY, duration);
+                    break;
+                case "Minggu":
+                    cal.add(Calendar.DATE, duration * 7);
+                    break;
+                case "Bulan":
+                    cal.add(Calendar.MONTH, duration);
+                    break;
+                case "Hari":
+                default:
+                    cal.add(Calendar.DATE, duration);
+                    break;
+            }
+            
             Date endDate = cal.getTime();
 
             Rental rental = new Rental(vehicle.getId(), customerId, startDate, endDate, total);
             rentalDAO.save(rental);
 
-            // 5. Generate invoice and send notifications
             Invoice invoice = invoiceService.generateInvoice(
                     vehicle, strategy, duration, customerName, receipt
             );
@@ -103,14 +112,11 @@ public class RentalServiceFacade {
             return invoice;
 
         } catch (Exception e) {
-
             if (reserved) {
                 try {
                     inventoryService.releaseVehicle(vehicle.getId());
-                }
-                catch (Exception ignored) {}
+                } catch (Exception ignored) {}
             }
-
             throw e;
         }
     }

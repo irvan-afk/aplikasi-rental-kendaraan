@@ -1,16 +1,38 @@
 package gui;
 
-import rental.Invoice;
+import java.awt.BorderLayout;
+import java.awt.Color;
+import java.awt.Component;
+import java.awt.Cursor;
+import java.awt.Dimension;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Frame;
+import java.awt.GridLayout;
+
+import javax.swing.BorderFactory;
+import javax.swing.Box;
+import javax.swing.BoxLayout;
+import javax.swing.JButton;
+import javax.swing.JComboBox;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JSeparator;
+import javax.swing.JTextArea;
+import javax.swing.JTextField;
+import javax.swing.SwingWorker;
+
 import pricing.DailyPricing;
 import pricing.HourlyPricing;
 import pricing.MonthlyPricing;
 import pricing.PricingStrategy;
-import rental.PaymentService;
+import pricing.WeeklyPricing;
+import rental.Invoice;
 import rental.RentalServiceFacade;
 import vehicle.Vehicle;
-
-import javax.swing.*;
-import java.awt.*;
 
 public class RentalProcessGui extends JDialog {
 
@@ -150,13 +172,12 @@ public class RentalProcessGui extends JDialog {
     private PricingStrategy getSelectedStrategy() {
         String type = (String) durationTypeCombo.getSelectedItem();
         switch (type) {
-            case "Per Jam":
-                return new HourlyPricing();
-            case "Bulanan":
-                return new MonthlyPricing();
-            default:
-                return new DailyPricing();
-        }
+            case "Per Jam": return new HourlyPricing();
+            case "Harian": return new DailyPricing();
+            case "Mingguan": return new WeeklyPricing(); // Tambahkan ini
+            case "Bulanan": return new MonthlyPricing();
+            default: return new DailyPricing();
+       }
     }
 
     private void calculatePrice() {
