@@ -1,7 +1,7 @@
 package rental;
 
-import vehicle.Vehicle;
 import rental.PaymentService.PaymentReceipt;
+import vehicle.Vehicle;
 
 public class Invoice {
 
@@ -15,6 +15,7 @@ public class Invoice {
     private final PaymentReceipt receipt;
     private final long timestamp;
 
+    @SuppressWarnings("java:S107")
     public Invoice(
             String invoiceNumber,
             Vehicle vehicle,

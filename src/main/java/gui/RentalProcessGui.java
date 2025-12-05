@@ -218,7 +218,7 @@ public class RentalProcessGui extends JDialog {
     private void updateSummary(PricingStrategy strategy, int duration) {
 
         String text =
-                "RINGKASAN RENTAL\n\n" +
+                "RINGKASAN RENTAL%n%n" +
                         "Kendaraan   : " + selectedVehicle.getType() + "\n" +
                         "Plat Nomor  : " + selectedVehicle.getPlateNumber() + "\n" +
                         "Merk/Model  : " + selectedVehicle.getBrand() + " " + selectedVehicle.getModel() + "\n\n" +

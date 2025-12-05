@@ -1,22 +1,47 @@
 package gui;
 
-import rental.Rental;
-import rental.RentalServiceFacade;
-
-import javax.swing.*;
-import javax.swing.table.DefaultTableModel;
-import java.awt.*;
+import java.awt.BorderLayout;
+import java.awt.Cursor;
+import java.awt.FlowLayout;
+import java.awt.Font;
+import java.awt.Frame;
 import java.text.SimpleDateFormat;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JDialog;
+import javax.swing.JLabel;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JScrollPane;
+import javax.swing.JTable;
+import javax.swing.ListSelectionModel;
+import javax.swing.SwingConstants;
+import javax.swing.SwingWorker;
+import javax.swing.WindowConstants;
+import javax.swing.table.DefaultTableModel;
+
+import rental.Rental;
+import rental.RentalServiceFacade;
 
 public class MyRentalsGui extends JDialog {
 
+    private static final long serialVersionUID = 1L;
+    private static final Logger LOGGER = Logger.getLogger(MyRentalsGui.class.getName());
+    private static final String FONT_SANS_SERIF = "SansSerif";
+
     private final String customerName;
-    private final RentalServiceFacade facade;
+    
+    // FIX: Mark non-serializable fields as transient
+    private final transient RentalServiceFacade facade;
+    private transient List<Rental> currentRentals;
+    
     private JTable rentalTable;
     private DefaultTableModel tableModel;
-    private List<Rental> currentRentals;
     private JButton returnButton;
 
     public MyRentalsGui(Frame owner, String customerName, RentalServiceFacade facade) {
@@ -29,7 +54,7 @@ public class MyRentalsGui extends JDialog {
 
         setSize(900, 400);
         setLocationRelativeTo(owner);
-        setDefaultCloseOperation(DISPOSE_ON_CLOSE);
+        setDefaultCloseOperation(WindowConstants.DISPOSE_ON_CLOSE);
     }
 
     private void initComponents() {
@@ -37,29 +62,30 @@ public class MyRentalsGui extends JDialog {
 
         // Header
         JLabel titleLabel = new JLabel("Riwayat Rental Anda", SwingConstants.CENTER);
-        titleLabel.setFont(new Font("SansSerif", Font.BOLD, 18));
+        titleLabel.setFont(new Font(FONT_SANS_SERIF, Font.BOLD, 18));
         titleLabel.setBorder(BorderFactory.createEmptyBorder(10, 0, 10, 0));
         add(titleLabel, BorderLayout.NORTH);
 
         // Table
         String[] columnNames = {"Kendaraan", "Plat Nomor", "Tgl Mulai", "Tgl Selesai", "Total Biaya", "Status"};
         tableModel = new DefaultTableModel(columnNames, 0) {
+            private static final long serialVersionUID = 1L;
             @Override
             public boolean isCellEditable(int row, int column) {
                 return false;
             }
         };
+        
         rentalTable = new JTable(tableModel);
         rentalTable.setFillsViewportHeight(true);
         rentalTable.setRowHeight(25);
-        rentalTable.setFont(new Font("SansSerif", Font.PLAIN, 14));
+        rentalTable.setFont(new Font(FONT_SANS_SERIF, Font.PLAIN, 14));
         rentalTable.setSelectionMode(ListSelectionModel.SINGLE_SELECTION);
         rentalTable.getSelectionModel().addListSelectionListener(e -> {
             if (!e.getValueIsAdjusting()) {
                 updateReturnButtonState();
             }
         });
-
 
         JScrollPane scrollPane = new JScrollPane(rentalTable);
         scrollPane.setBorder(BorderFactory.createEmptyBorder(10, 10, 10, 10));
@@ -114,11 +140,12 @@ public class MyRentalsGui extends JDialog {
                     }
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
+                    LOGGER.log(Level.WARNING, "Load rentals interrupted", e);
                     JOptionPane.showMessageDialog(MyRentalsGui.this,
                             "Proses memuat data dibatalkan.",
                             "Dibatalkan", JOptionPane.WARNING_MESSAGE);
                 } catch (ExecutionException e) {
-                    e.printStackTrace();
+                    LOGGER.log(Level.SEVERE, "Error loading rentals", e);
                     JOptionPane.showMessageDialog(MyRentalsGui.this,
                             "Gagal memuat riwayat rental: " + e.getCause().getMessage(),
                             "Error", JOptionPane.ERROR_MESSAGE);
@@ -134,7 +161,6 @@ public class MyRentalsGui extends JDialog {
         int selectedRow = rentalTable.getSelectedRow();
         if (selectedRow != -1 && currentRentals != null && selectedRow < currentRentals.size()) {
             Rental selectedRental = currentRentals.get(selectedRow);
-            // Enable if the vehicle is not available (i.e., currently rented)
             returnButton.setEnabled(!selectedRental.isVehicleIsAvailable());
         } else {
             returnButton.setEnabled(false);
@@ -167,19 +193,20 @@ public class MyRentalsGui extends JDialog {
             @Override
             protected void done() {
                 try {
-                    get(); // Check for exceptions
+                    get();
                     JOptionPane.showMessageDialog(MyRentalsGui.this,
                             "Kendaraan berhasil dikembalikan.",
                             "Sukses",
                             JOptionPane.INFORMATION_MESSAGE);
-                    loadRentals(); // Refresh the list
+                    loadRentals();
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();
+                    LOGGER.log(Level.WARNING, "Return process interrupted", e);
                      JOptionPane.showMessageDialog(MyRentalsGui.this,
                             "Proses pengembalian dibatalkan.",
                             "Dibatalkan", JOptionPane.WARNING_MESSAGE);
                 } catch (ExecutionException e) {
-                    e.printStackTrace();
+                    LOGGER.log(Level.SEVERE, "Error returning vehicle", e);
                     JOptionPane.showMessageDialog(MyRentalsGui.this,
                             "Gagal mengembalikan kendaraan: " + e.getCause().getMessage(),
                             "Error",
