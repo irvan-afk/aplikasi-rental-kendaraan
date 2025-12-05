@@ -20,16 +20,19 @@ import javax.swing.JPasswordField;
 import javax.swing.JTextField;
 import javax.swing.border.EmptyBorder;
 
+import dao.CustomerDAO;
 import dao.UserDAO;
 
 public class RegisterGui extends JDialog {
     private JTextField userField;
     private JPasswordField passField;
     private UserDAO userDAO;
+    private CustomerDAO customerDAO;
 
     public RegisterGui(Frame owner) {
         super(owner, "Pendaftaran Akun Baru", true);
         userDAO = new UserDAO();
+        customerDAO = new CustomerDAO();
         
         setSize(400, 300);
         setLocationRelativeTo(owner);
@@ -101,13 +104,18 @@ public class RegisterGui extends JDialog {
         try {
             boolean success = userDAO.registerUser(user, pass);
             if (success) {
+                // NOTE: This should ideally be in a single transaction.
+                // For this project's scope, we do it sequentially.
+                int newUserId = userDAO.findIdByUsername(user);
+                customerDAO.createCustomerForUser(newUserId, user); // Use username as default name
+
                 JOptionPane.showMessageDialog(this, "Registrasi berhasil! Silakan login.");
                 dispose();
             } else {
                 JOptionPane.showMessageDialog(this, "Registrasi gagal. Coba lagi.");
             }
         } catch (SQLException ex) {
-            if (ex.getSQLState().equals("23505")) {
+            if (ex.getSQLState().equals("23505")) { // Unique violation
                 JOptionPane.showMessageDialog(this, "Username sudah ada. Silakan pilih yang lain.");
             } else {
                 ex.printStackTrace();

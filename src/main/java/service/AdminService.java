@@ -1,22 +1,22 @@
 package service;
 
+import dao.RentalDAO;
 import dao.VehicleDAO;
+import rental.Rental;
 import vehicle.Vehicle;
 import vehicle.factory.VehicleFactory;
 
 import java.sql.SQLException;
 import java.util.List;
 
-import dao.VehicleDAO;
-import vehicle.Vehicle;
-import vehicle.factory.VehicleFactory;
-
 public class AdminService {
 
-    private VehicleDAO vehicleDAO;
+    private final VehicleDAO vehicleDAO;
+    private final RentalDAO rentalDAO;
 
     public AdminService(VehicleDAO vehicleDAO) {
         this.vehicleDAO = vehicleDAO;
+        this.rentalDAO = new RentalDAO();
     }
 
     // create vehicle using factory, then save to DB
@@ -28,6 +28,10 @@ public class AdminService {
 
     public List<Vehicle> listVehicles() throws SQLException {
         return vehicleDAO.getAll();
+    }
+    
+    public List<Rental> listActiveRentals() throws SQLException {
+        return rentalDAO.findAllActiveRentals();
     }
 
     public Vehicle findByPlate(String plate) throws SQLException {
@@ -48,5 +52,13 @@ public class AdminService {
 
     public void updateVehicle(Vehicle vehicle) throws SQLException {
         vehicleDAO.updateVehicle(vehicle);
+    }
+
+    public int getNumberOfVehiclesAvailable() throws SQLException {
+        return vehicleDAO.countByAvailability(true);
+    }
+
+    public int getNumberOfVehiclesRented() throws SQLException {
+        return vehicleDAO.countByAvailability(false);
     }
 }

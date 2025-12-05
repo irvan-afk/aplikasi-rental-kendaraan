@@ -27,6 +27,7 @@ public class LoginGui extends JDialog {
     private JPasswordField passField;
     private UserDAO userDAO;
     private String authenticatedRole = null;
+    private String authenticatedUsername = null;
 
     public LoginGui(Frame owner) {
         super(owner, "Login Sistem", true);
@@ -104,9 +105,10 @@ public class LoginGui extends JDialog {
         String pass = new String(passField.getPassword());
 
         try {
-            String role = userDAO.authenticate(user, pass);
-            if (role != null) {
-                this.authenticatedRole = role;
+            String[] authResult = userDAO.authenticate(user, pass);
+            if (authResult != null) {
+                this.authenticatedRole = authResult[0];
+                this.authenticatedUsername = authResult[1];
                 dispose();
             } else {
                 JOptionPane.showMessageDialog(this, "Username atau Password salah!", "Login Gagal", JOptionPane.ERROR_MESSAGE);
@@ -119,5 +121,9 @@ public class LoginGui extends JDialog {
 
     public String getAuthenticatedRole() {
         return authenticatedRole;
+    }
+
+    public String getAuthenticatedUsername() {
+        return authenticatedUsername;
     }
 }

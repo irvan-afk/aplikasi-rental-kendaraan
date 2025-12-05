@@ -8,21 +8,23 @@ import java.sql.SQLException;
 import db.ConnectionManager;
 
 public class UserDAO {
-    // Mereturn role jika login sukses, return null jika gagal
-    public String authenticate(String username, String password) throws SQLException {
-        String sql = "SELECT role FROM users WHERE username = ? AND password = ?";
+    // Returns {role, username} on success, null on failure
+    public String[] authenticate(String username, String password) throws SQLException {
+        String sql = "SELECT role, username FROM users WHERE username = ? AND password = ?";
         try (Connection conn = ConnectionManager.getDataSource().getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             ps.setString(1, username);
             ps.setString(2, password);
             try (ResultSet rs = ps.executeQuery()) {
                 if (rs.next()) {
-                    return rs.getString("role");
+                    return new String[]{rs.getString("role"), rs.getString("username")};
                 }
             }
         }
         return null;
-    }    public boolean registerUser(String username, String password) throws SQLException {
+    }
+
+    public boolean registerUser(String username, String password) throws SQLException {
         // Default role for new users is CUSTOMER
         String sql = "INSERT INTO users (username, password, role) VALUES (?, ?, 'CUSTOMER')";
         
@@ -34,10 +36,22 @@ public class UserDAO {
             
             int affectedRows = ps.executeUpdate();
             
-            // Return true if one row was affected, meaning the user was created
             return affectedRows == 1;
         }
-        // The try-with-resources will handle closing the connection and statement.
-        // SQLException will be thrown for issues like duplicate username (if constraint exists)
+    }
+
+    public int findIdByUsername(String username) throws SQLException {
+        String sql = "SELECT id FROM users WHERE username = ?";
+        try (Connection conn = ConnectionManager.getDataSource().getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setString(1, username);
+            try (ResultSet rs = ps.executeQuery()) {
+                if (rs.next()) {
+                    return rs.getInt("id");
+                } else {
+                    throw new SQLException("User with username '" + username + "' not found.");
+                }
+            }
+        }
     }
 }
